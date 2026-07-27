@@ -72,6 +72,34 @@ describe('WalletScreen', () => {
     );
   });
 
+  it('не рисует дату, когда бэк её не отдал', async () => {
+    // У molot обработчик не выбирает колонку created_at из базы вовсе.
+    // Показать «Invalid Date» в каждой строке было бы хуже, чем не показать.
+    const adapter = makeFakeAdapter({
+      getWithdrawals: vi.fn(async () => [
+        { id: 'w1', amount: 2, status: 'pending', address: 'EQx', createdAt: undefined },
+      ]),
+    });
+    const { container } = renderWithHud(<WalletScreen />, { adapter });
+    await waitFor(() =>
+      expect(container.querySelector('.hud-wallet-withdrawals')).toBeInTheDocument(),
+    );
+    expect(container.textContent).not.toMatch(/Invalid Date/);
+  });
+
+  it('не рисует дату, когда она неразбираемая', async () => {
+    const adapter = makeFakeAdapter({
+      getWithdrawals: vi.fn(async () => [
+        { id: 'w1', amount: 2, status: 'pending', address: 'EQx', createdAt: 'мусор' },
+      ]),
+    });
+    const { container } = renderWithHud(<WalletScreen />, { adapter });
+    await waitFor(() =>
+      expect(container.querySelector('.hud-wallet-withdrawals')).toBeInTheDocument(),
+    );
+    expect(container.textContent).not.toMatch(/Invalid Date/);
+  });
+
   it('вывод доступен при подключённом TonConnect, если бэк не умеет привязку', async () => {
     const adapter = makeFakeAdapter(); // без postWalletLink
     renderWithHud(<WalletScreen />, { adapter });

@@ -129,7 +129,12 @@ export interface Withdrawal {
   amount: number;
   status: string;
   address: string | null;
-  createdAt: string;
+  /**
+   * Когда вывод создан. Есть не у всех бэков: у molot обработчик не выбирает
+   * колонку, хотя она в базе есть. Лучше не показать дату, чем показать
+   * «Invalid Date», поэтому поле необязательное.
+   */
+  createdAt?: string;
 }
 
 /** Страница гроссбуха. Именована, потому что на этапе 3 появится второй такой же

@@ -1,19 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useHudResource } from '../context/useHudResource';
+import { formatWhen } from '../format/datetime';
 import { fmtAmount } from '../format/money';
 import { Skeleton } from '../primitives/Skeleton';
 import { IconBall, IconX } from '../primitives/icons';
-
-/**
- * Дата раунда есть не у всех бэков (см. `GameRound.createdAt`), а пустая или
- * мусорная строка дала бы `new Date(...).toLocaleString()` === «Invalid Date».
- * Рисуем дату только когда она есть и действительно разбирается.
- */
-function formatWhen(raw: string | undefined, locale: string): string | null {
-  if (!raw) return null;
-  const d = new Date(raw);
-  return Number.isNaN(d.getTime()) ? null : d.toLocaleString(locale);
-}
 
 /**
  * История сыгранных раундов — альтернатива гроссбуху (`HistoryScreen`) для игр

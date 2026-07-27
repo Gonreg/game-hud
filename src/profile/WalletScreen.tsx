@@ -4,6 +4,7 @@ import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui
 import { useHudAdapter } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { useHudStore } from '../store/hudStore';
+import { formatWhen } from '../format/datetime';
 import { fmtAmount } from '../format/money';
 import { InfoPopover } from '../primitives/InfoPopover';
 import { Skeleton } from '../primitives/Skeleton';
@@ -218,15 +219,16 @@ export function WalletScreen() {
           {withdrawals.loading ? (
             <Skeleton rows={2} />
           ) : (
-            withdrawals.data?.map((w) => (
-              <div key={w.id} className="hud-wallet-withdrawals__row">
-                <span>{fmtAmount(w.amount)}</span>
-                <span className="hud-profile-list__hint">{w.status}</span>
-                <span className="hud-profile-list__hint">
-                  {new Date(w.createdAt).toLocaleDateString(i18n.language || 'en')}
-                </span>
-              </div>
-            ))
+            withdrawals.data?.map((w) => {
+              const when = formatWhen(w.createdAt, i18n.language || 'en');
+              return (
+                <div key={w.id} className="hud-wallet-withdrawals__row">
+                  <span>{fmtAmount(w.amount)}</span>
+                  <span className="hud-profile-list__hint">{w.status}</span>
+                  {when && <span className="hud-profile-list__hint">{when}</span>}
+                </div>
+              );
+            })
           )}
         </div>
       )}
