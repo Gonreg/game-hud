@@ -78,7 +78,10 @@
       "cashed": "Cashed out",
       "completed": "Completed",
       "empty_won": "Guessed right",
-      "busted": "Busted"
+      "busted": "Busted",
+      "won": "Won",
+      "lost": "Lost",
+      "refunded": "Refunded"
     }
   },
   "stats": {

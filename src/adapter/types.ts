@@ -148,9 +148,14 @@ export interface GameRound {
   payout: number;
   /** Коэффициент раунда. */
   coef: number;
-  /** Исход в терминах игры: cashed, busted, completed и так далее. */
+  /** Исход в терминах игры: cashed, busted, won, lost и так далее. */
   status: string;
-  createdAt: string;
+  /**
+   * Когда раунд сыгран. Есть не у всех бэков: у basketball запрос истории
+   * не выбирает временную метку вовсе. Лучше не показать дату, чем показать
+   * «Invalid Date», поэтому поле необязательное.
+   */
+  createdAt?: string;
 }
 
 /** Квитанция вывода: экран показывает игроку короткий ID и статус сразу после

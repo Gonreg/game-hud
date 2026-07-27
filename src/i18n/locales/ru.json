@@ -78,7 +78,10 @@
       "cashed": "Кэшаут",
       "completed": "Пройдено",
       "empty_won": "Угадал",
-      "busted": "Слив"
+      "busted": "Слив",
+      "won": "Выигрыш",
+      "lost": "Проигрыш",
+      "refunded": "Возврат"
     }
   },
   "stats": {

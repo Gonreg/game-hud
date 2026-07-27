@@ -5,6 +5,17 @@ import { Skeleton } from '../primitives/Skeleton';
 import { IconBall, IconX } from '../primitives/icons';
 
 /**
+ * Дата раунда есть не у всех бэков (см. `GameRound.createdAt`), а пустая или
+ * мусорная строка дала бы `new Date(...).toLocaleString()` === «Invalid Date».
+ * Рисуем дату только когда она есть и действительно разбирается.
+ */
+function formatWhen(raw: string | undefined, locale: string): string | null {
+  if (!raw) return null;
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d.toLocaleString(locale);
+}
+
+/**
  * История сыгранных раундов — альтернатива гроссбуху (`HistoryScreen`) для игр
  * вроде matreshka, у которых нет эндпоинта проводок. `ProfileShell` выбирает
  * между экранами по тому, какой метод адаптера реализован.
@@ -24,6 +35,7 @@ export function GameHistoryScreen() {
         const net = r.payout - r.bet;
         const win = net > 0;
         const statusLabel = t(`history.status.${r.status}`, { defaultValue: r.status });
+        const when = formatWhen(r.createdAt, locale);
         return (
           <div className="hud-profile-list__row" style={{ cursor: 'default' }} key={r.id}>
             <span className="hud-profile-list__icon">{win ? <IconBall /> : <IconX />}</span>
@@ -31,7 +43,7 @@ export function GameHistoryScreen() {
               <div>
                 {statusLabel} · {r.coef.toFixed(2)}×
               </div>
-              <div className="hud-profile-hub__sub">{new Date(r.createdAt).toLocaleString(locale)}</div>
+              {when && <div className="hud-profile-hub__sub">{when}</div>}
             </div>
             <div
               className="hud-profile-list__hint"

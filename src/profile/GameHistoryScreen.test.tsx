@@ -46,4 +46,26 @@ describe('GameHistoryScreen', () => {
     renderWithHud(<GameHistoryScreen />, { adapter });
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
   });
+
+  it('не рисует дату, когда бэк её не отдал', async () => {
+    // У basketball запрос истории не выбирает временную метку вовсе.
+    // Показать «Invalid Date» в каждой строке было бы хуже, чем не показать.
+    const adapter = makeFakeAdapter({
+      getGameHistory: vi.fn(async () => [{ ...FAKE_ROUND, createdAt: undefined }]),
+    });
+    const { container } = renderWithHud(<GameHistoryScreen />, { adapter });
+    // net = payout(10) - bet(2) = 8.
+    await waitFor(() => expect(screen.getByText(/8\.00/)).toBeInTheDocument());
+    expect(container.textContent).not.toMatch(/Invalid Date/);
+  });
+
+  it('не рисует дату, когда она неразбираемая', async () => {
+    const adapter = makeFakeAdapter({
+      getGameHistory: vi.fn(async () => [{ ...FAKE_ROUND, createdAt: 'мусор' }]),
+    });
+    const { container } = renderWithHud(<GameHistoryScreen />, { adapter });
+    // net = payout(10) - bet(2) = 8.
+    await waitFor(() => expect(screen.getByText(/8\.00/)).toBeInTheDocument());
+    expect(container.textContent).not.toMatch(/Invalid Date/);
+  });
 });

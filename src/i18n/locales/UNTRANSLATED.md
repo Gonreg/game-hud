@@ -44,6 +44,19 @@ matreshka (`STATUS_LABELS` в `frontend/src/profile/HistoryScreen.tsx`), где 
 строку — экран переводит её через `t('history.status.' + status, { defaultValue:
 status })`, так что непереведённый статус покажет сырое слово, а не сломает экран.
 
+## history.status.won/lost/refunded (basketball, Task 21)
+
+У basketball статусы раунда свои — `won`, `lost`, `refunded` (internal/httpapi/stats.go),
+и без словарной записи проваливались в `defaultValue` — сырое английское слово вместо
+перевода на любом языке. `won`/`lost`/`refunded` переведены на `en` и `ru` вручную.
+
+В `basketball/frontend/src/i18n/locales/<lang>.json` для этих статусов нет перевода ни
+на одном из десяти языков вовсе (там нет ключа `history.status.*`: экран самой игры для
+этих статусов тоже полагается на `defaultValue` библиотеки) — переносить неоткуда.
+Поэтому для восьми языков (`es`, `de`, `fr`, `hi`, `ur`, `bn`, `si`, `ne`) подставлен
+английский текст — по той же причине, что и везде в этом файле: полагаться на
+`fallbackLng` нельзя, он разный по играм.
+
 ## Почему здесь английский текст, а не отсутствие ключа
 
 Полагаться на `fallbackLng` в i18next нельзя: его настраивает игра, и настроен он
