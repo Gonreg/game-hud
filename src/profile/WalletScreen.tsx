@@ -26,7 +26,6 @@ export function WalletScreen() {
   const [tonConnectUI] = useTonConnectUI();
   const address = useTonAddress();
   const me = useHudResource('me', (a) => a.getMe());
-  const depositInfo = useHudResource('deposit', (a) => a.getDeposit());
   const hasWithdrawalsList = typeof adapter.getWithdrawals === 'function';
   const withdrawals = useHudResource<Withdrawal[]>('withdrawals', (a) =>
     a.getWithdrawals ? a.getWithdrawals() : Promise.resolve([]),
@@ -59,11 +58,10 @@ export function WalletScreen() {
       setMsg(t('wallet.amount_invalid'));
       return;
     }
-    const d = depositInfo.data;
-    if (!d) return;
     setBusy(true);
     setMsg(null);
     try {
+      const d = await adapter.getDeposit();
       const nano = BigInt(Math.round(ton * Number(NANO_PER_TON)));
       await tonConnectUI.sendTransaction({
         validUntil: Math.floor(Date.now() / 1000) + 300,
@@ -105,7 +103,7 @@ export function WalletScreen() {
       return;
     }
     const ton = Number(withdrawAmount);
-    if (!Number.isFinite(ton) || ton <= 0 || ton > (me.data?.balance ?? 0)) {
+    if (!Number.isFinite(ton) || ton <= 0) {
       setMsg(t('wallet.amount_invalid'));
       return;
     }
@@ -166,14 +164,6 @@ export function WalletScreen() {
           {t('wallet.deposit')}
           <InfoPopover text={t('wallet.deposit_info')} />
         </div>
-        {depositInfo.data && (
-          <>
-            <div className="hud-profile-card__value">{depositInfo.data.note}</div>
-            <div className="hud-profile-card__value">
-              {depositInfo.data.address} · {depositInfo.data.comment}
-            </div>
-          </>
-        )}
         <input
           type="number"
           step="0.1"
