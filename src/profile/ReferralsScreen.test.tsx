@@ -9,7 +9,7 @@ describe('ReferralsScreen', () => {
   it('показывает счётчик приглашённых и заработок', async () => {
     renderWithHud(<ReferralsScreen />);
     await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument());
-    expect(screen.getByText('1.25')).toBeInTheDocument();
+    expect(screen.getByText(/4\.75/)).toBeInTheDocument();
   });
 
   it('показывает выданную сервером ссылку, а не собранную на клиенте', async () => {

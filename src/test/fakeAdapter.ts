@@ -54,7 +54,9 @@ export const FAKE_REFERRALS: Referrals = {
   refCode: 'ABC123',
   refLink: 'https://t.me/test_bot?start=ABC123',
   invitedCount: 2,
-  totalEarned: 1.25,
+  // Намеренно отличается от refBalance: одинаковые значения делали бы запрос
+  // getByText неоднозначным и вынуждали бы изгибать разметку под тест.
+  totalEarned: 4.75,
   ratePercent: 10,
   refBalance: 1.25,
   invitees: [

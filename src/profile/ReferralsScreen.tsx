@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHudConfig } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
@@ -93,11 +93,7 @@ export function ReferralsScreen() {
         />
         <StatTile
           label={t('referrals.earned')}
-          value={
-            <>
-              {fmtAmount(data?.totalEarned)} <span>{currency}</span>
-            </>
-          }
+          value={`${fmtAmount(data?.totalEarned)} ${currency}`}
           color="45, 212, 191"
         />
         <StatTile
@@ -159,7 +155,7 @@ export function ReferralsScreen() {
   );
 }
 
-function StatTile({ label, value, color }: { label: string; value: ReactNode; color: string }) {
+function StatTile({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div
       style={{
