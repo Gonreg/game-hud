@@ -3,7 +3,10 @@ import { useHudStore } from './hudStore';
 
 describe('useHudStore', () => {
   beforeEach(() => {
-    useHudStore.setState({ open: false, screen: 'hub', walletFocus: null, helpTheme: null });
+    // Форму начального состояния берём из самого стора, а не переписываем руками:
+    // иначе новое поле в HudState придётся не забыть добавить и здесь, а забыв —
+    // получить не упавший тест, а молча текущее между it-блоками состояние.
+    useHudStore.setState(useHudStore.getInitialState());
   });
 
   it('стартует закрытым на хабе', () => {
@@ -45,6 +48,17 @@ describe('useHudStore', () => {
       screen: 'help',
       helpTheme: 'finance',
     });
+  });
+
+  it('setScreen ходит внутри уже открытого кабинета, не открывая его сам', () => {
+    useHudStore.getState().setScreen('stats');
+    expect(useHudStore.getState()).toMatchObject({ open: false, screen: 'stats' });
+  });
+
+  it('clearHelpTheme гасит тему, не закрывая экран', () => {
+    useHudStore.getState().openHelpWithTheme('bug');
+    useHudStore.getState().clearHelpTheme();
+    expect(useHudStore.getState()).toMatchObject({ screen: 'help', helpTheme: null });
   });
 
   it('close закрывает оверлей', () => {

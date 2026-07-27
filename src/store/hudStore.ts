@@ -48,6 +48,10 @@ export const useHudStore = create<HudState>((set) => ({
   close: () => set({ open: false }),
   setScreen: (screen) => set({ screen }),
   openWalletWithFocus: (focus) => set({ open: true, screen: 'wallet', walletFocus: focus }),
+  // walletFocus и helpTheme — одноразовые: экран, который их применил, обязан их
+  // погасить. Гасить надо в useEffect при монтировании (`if (!focus) return; …;
+  // clear()`), а не в обработчике клика — тогда очистка привязана к жизненному
+  // циклу экрана, а не к дисциплине разработчика в множестве мест.
   clearWalletFocus: () => set({ walletFocus: null }),
   openHelpWithTheme: (theme) => set({ open: true, screen: 'help', helpTheme: theme }),
   clearHelpTheme: () => set({ helpTheme: null }),
