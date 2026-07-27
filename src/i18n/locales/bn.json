@@ -176,5 +176,13 @@
     "theme_bug": "বাগ",
     "theme_other": "অন্যান্য",
     "theme_partner": "অংশীদারিত্ব"
+  },
+  "sound": {
+    "title": "Sound",
+    "music": "Music",
+    "sfx": "Game sounds",
+    "on": "on",
+    "off": "off",
+    "how": "How to play"
   }
 }

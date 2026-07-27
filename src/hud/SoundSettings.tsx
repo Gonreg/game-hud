@@ -3,21 +3,32 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * Копия F/components/SoundSettings.tsx: своя плавающая шестерёнка (левее
- * аватара) с выпадающим меню Music/SFX. Аудио-движка у библиотеки нет —
- * состояние и переключение приходят пропсами, звуком управляет игра. Без
- * подборщика треков (список треков знает только игра) и без пункта
- * «как играть» — у этого компонента нет обработчика для него.
+ * аватара) с выпадающим меню Music/SFX (+ подборщик треков) и «как играть».
+ * Аудио-движка у библиотеки нет — состояние и переключение приходят пропсами,
+ * звуком и списком треков управляет игра. Строки Music/SFX/Sound/on/off —
+ * неймспейс `sound` словаря библиотеки (панель звука переехала в библиотеку
+ * на Task 19, вместе с ней и подписи); названия треков и «как играть» —
+ * пропсами, чтобы не терять фичи fatman (Task 25) и matreshka.
  */
 export function SoundSettings({
   musicOn,
   sfxOn,
   onToggleMusic,
   onToggleSfx,
+  tracks,
+  currentTrack,
+  onSelectTrack,
+  onHowToPlay,
 }: {
   musicOn: boolean;
   sfxOn: boolean;
   onToggleMusic: () => void;
   onToggleSfx: () => void;
+  /** Названия треков приходят от игры: они у каждой свои. Без них блок скрыт. */
+  tracks?: Array<{ id: string; label: string }>;
+  currentTrack?: string;
+  onSelectTrack?: (id: string) => void;
+  onHowToPlay?: () => void;
 }) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,7 +48,7 @@ export function SoundSettings({
       <button
         type="button"
         className="hud-fm-gear"
-        aria-label={t('common.sound', 'Sound')}
+        aria-label={t('sound.title')}
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((v) => !v)}
       >
@@ -74,11 +85,25 @@ export function SoundSettings({
                 <circle cx="18" cy="16" r="3" />
               </svg>
             </span>
-            <span className="hud-fm-sml">{t('common.music', 'Music')}</span>
+            <span className="hud-fm-sml">{t('sound.music')}</span>
             <span className={'hud-fm-sms' + (musicOn ? '' : ' hud-off')}>
-              {musicOn ? t('common.on', 'on') : t('common.off', 'off')}
+              {musicOn ? t('sound.on') : t('sound.off')}
             </span>
           </button>
+          {tracks && tracks.length > 0 && (
+            <div className={'hud-fm-smtracks' + (musicOn ? '' : ' hud-off')}>
+              {tracks.map((tk) => (
+                <button
+                  key={tk.id}
+                  type="button"
+                  className={'hud-fm-smtrack' + (tk.id === currentTrack && musicOn ? ' hud-on' : '')}
+                  onClick={() => onSelectTrack?.(tk.id)}
+                >
+                  {tk.label}
+                </button>
+              ))}
+            </div>
+          )}
           <button type="button" className="hud-fm-smitem" onClick={onToggleSfx}>
             <span className="hud-fm-smi">
               <svg
@@ -94,11 +119,30 @@ export function SoundSettings({
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
               </svg>
             </span>
-            <span className="hud-fm-sml">{t('common.sfx', 'Game sounds')}</span>
+            <span className="hud-fm-sml">{t('sound.sfx')}</span>
             <span className={'hud-fm-sms' + (sfxOn ? '' : ' hud-off')}>
-              {sfxOn ? t('common.on', 'on') : t('common.off', 'off')}
+              {sfxOn ? t('sound.on') : t('sound.off')}
             </span>
           </button>
+          {onHowToPlay && (
+            <button type="button" className="hud-fm-smitem" onClick={onHowToPlay}>
+              <span className="hud-fm-smi">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </span>
+              <span className="hud-fm-sml">{t('sound.how')}</span>
+            </button>
+          )}
         </div>
       )}
     </div>

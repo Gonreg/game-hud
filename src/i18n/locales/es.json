@@ -176,5 +176,13 @@
     "theme_bug": "Error",
     "theme_other": "Otro",
     "theme_partner": "Colaboración"
+  },
+  "sound": {
+    "title": "Sound",
+    "music": "Music",
+    "sfx": "Game sounds",
+    "on": "on",
+    "off": "off",
+    "how": "How to play"
   }
 }

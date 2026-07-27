@@ -24,11 +24,25 @@ function commentPayload(text: string): string {
  * HUD игры поверх раунда. `open`/`onClose` — пропсы: у fatman это uiStore,
  * который в библиотеку не переезжает, открытием шита управляет игра.
  *
- * Как и WalletScreen: без клиентского лимита по балансу (решает сервер) и без
- * показа адреса депозита (уходит прямо в TonConnect) — этого нет ни в
- * fatman, ни в matreshka.
+ * Содержимое вынесено в WalletSheetBody: BottomSheet возвращает null, пока
+ * `open` не true, и React в этом случае не рендерит переданных детей вовсе —
+ * значит компонент-тело со своими хуками (в первую очередь useHudResource
+ * → getMe) не монтируется и не дёргает адаптер, пока шит закрыт.
  */
 export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <BottomSheet open={open} onClose={onClose} labelledBy="hud-wallet-sheet-title">
+      <WalletSheetBody onClose={onClose} />
+    </BottomSheet>
+  );
+}
+
+/**
+ * Как и у fatman: без клиентского лимита по балансу (решает сервер) и без
+ * показа адреса депозита (уходит прямо в TonConnect) — этого нет ни в
+ * fatman, ни в matreshka, и мы это уже вычистили из WalletScreen.
+ */
+function WalletSheetBody({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const adapter = useHudAdapter();
   const currency = useHudConfig().currency;
@@ -37,6 +51,7 @@ export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => v
   const me = useHudResource('me', (a) => a.getMe());
   const hasWalletLink = typeof adapter.postWalletLink === 'function';
 
+  const [tab, setTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [amount, setAmount] = useState('1');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [busy, setBusy] = useState(false);
@@ -115,7 +130,7 @@ export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => v
   const shortLinked = linkedAddress ? `${linkedAddress.slice(0, 4)}…${linkedAddress.slice(-4)}` : null;
 
   return (
-    <BottomSheet open={open} onClose={onClose} labelledBy="hud-wallet-sheet-title">
+    <>
       <div className="hud-sheet__head">
         <div className="hud-sheet__title hud-ton-info-title" id="hud-wallet-sheet-title">
           <IconTon width={20} height={20} />
@@ -157,56 +172,73 @@ export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => v
         )}
       </div>
 
-      <div className="hud-wallet-sheet-form">
-        <div className="hud-sheet__group-label">{t('wallet.deposit')}</div>
-        <div className="hud-wallet-sheet-input">
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.1"
-            min="0.1"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <span>{currency}</span>
-        </div>
+      <div className="hud-wallet-sheet-tabs">
         <button
           type="button"
-          className="hud-ton-info-cta"
-          onClick={() => void deposit()}
-          disabled={busy}
+          className={'hud-wallet-sheet-tab' + (tab === 'deposit' ? ' hud-is-active' : '')}
+          onClick={() => setTab('deposit')}
         >
-          {busy ? '…' : t('wallet.deposit_btn', { amount })}
+          {t('wallet.deposit')}
         </button>
-        <p className="hud-wallet-sheet-hint">{t('wallet.deposit_info')}</p>
+        <button
+          type="button"
+          className={'hud-wallet-sheet-tab' + (tab === 'withdraw' ? ' hud-is-active' : '')}
+          onClick={() => setTab('withdraw')}
+        >
+          {t('wallet.withdraw')}
+        </button>
       </div>
 
-      <div className="hud-wallet-sheet-form">
-        <div className="hud-sheet__group-label">{t('wallet.withdraw')}</div>
-        <div className="hud-wallet-sheet-input">
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.1"
-            min="0.1"
-            placeholder={t('wallet.withdraw_placeholder')}
-            value={withdrawAmount}
-            onChange={(e) => setWithdrawAmount(e.target.value)}
-          />
-          <span>{currency}</span>
+      {tab === 'deposit' ? (
+        <div className="hud-wallet-sheet-form">
+          <div className="hud-wallet-sheet-input">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.1"
+              min="0.1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <span>{currency}</span>
+          </div>
+          <button
+            type="button"
+            className="hud-ton-info-cta"
+            onClick={() => void deposit()}
+            disabled={busy}
+          >
+            {busy ? '…' : t('wallet.deposit_btn', { amount })}
+          </button>
+          <p className="hud-wallet-sheet-hint">{t('wallet.deposit_info')}</p>
         </div>
-        <button
-          type="button"
-          className="hud-ton-info-cta hud-wallet-sheet-withdraw-cta"
-          onClick={() => void withdraw()}
-          disabled={busy}
-        >
-          {t('wallet.withdraw_btn')}
-        </button>
-        <p className="hud-wallet-sheet-hint">{t('wallet.withdraw_hint')}</p>
-      </div>
+      ) : (
+        <div className="hud-wallet-sheet-form">
+          <div className="hud-wallet-sheet-input">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.1"
+              min="0.1"
+              placeholder={t('wallet.withdraw_placeholder')}
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+            />
+            <span>{currency}</span>
+          </div>
+          <button
+            type="button"
+            className="hud-ton-info-cta hud-wallet-sheet-withdraw-cta"
+            onClick={() => void withdraw()}
+            disabled={busy}
+          >
+            {t('wallet.withdraw_btn')}
+          </button>
+          <p className="hud-wallet-sheet-hint">{t('wallet.withdraw_hint')}</p>
+        </div>
+      )}
 
       {msg && <div className="hud-wallet-sheet-msg">{msg}</div>}
-    </BottomSheet>
+    </>
   );
 }

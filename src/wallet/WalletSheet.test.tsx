@@ -12,13 +12,19 @@ vi.mock('@tonconnect/ui-react', () => ({
 }));
 
 describe('WalletSheet', () => {
-  it('закрытый ничего не рендерит', () => {
-    const { container } = renderWithHud(<WalletSheet open={false} onClose={() => {}} />);
+  it('закрытый ничего не рендерит и не дёргает getMe', () => {
+    const adapter = makeFakeAdapter();
+    const { container } = renderWithHud(<WalletSheet open={false} onClose={() => {}} />, {
+      adapter,
+    });
     expect(container).toBeEmptyDOMElement();
+    expect(adapter.getMe).not.toHaveBeenCalled();
   });
 
   it('открытый показывает форму вывода', async () => {
     renderWithHud(<WalletSheet open onClose={() => {}} />);
+    const tabs = await screen.findAllByRole('button', { name: /^withdraw$/i });
+    await userEvent.click(tabs[0]);
     expect(await screen.findByPlaceholderText(/amount/i)).toBeInTheDocument();
   });
 
@@ -41,9 +47,18 @@ describe('WalletSheet', () => {
   it('шлёт вывод через адаптер', async () => {
     const adapter = makeFakeAdapter();
     renderWithHud(<WalletSheet open onClose={() => {}} />, { adapter });
+
+    // Вкладка и кнопка отправки подписаны одинаково («Withdraw») — это
+    // коллизия в самом словаре fatman, а не в разметке. Идём тем же путём,
+    // что и игрок: сначала вкладка, потом кнопка внутри формы.
+    const tabs = await screen.findAllByRole('button', { name: /^withdraw$/i });
+    await userEvent.click(tabs[0]);
+
     const input = await screen.findByPlaceholderText(/amount/i);
     await userEvent.type(input, '2');
-    await userEvent.click(screen.getByRole('button', { name: /^withdraw$/i }));
+
+    const buttons = screen.getAllByRole('button', { name: /^withdraw$/i });
+    await userEvent.click(buttons[buttons.length - 1]);
     await waitFor(() => expect(adapter.postWithdraw).toHaveBeenCalledWith(2, 'EQUserWallet'));
   });
 });

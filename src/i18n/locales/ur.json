@@ -176,5 +176,13 @@
     "theme_bug": "بگ",
     "theme_other": "دیگر",
     "theme_partner": "شراکت داری"
+  },
+  "sound": {
+    "title": "Sound",
+    "music": "Music",
+    "sfx": "Game sounds",
+    "on": "on",
+    "off": "off",
+    "how": "How to play"
   }
 }

@@ -19,6 +19,7 @@ const HUD_NAMESPACES = [
   'notifications',
   'language',
   'support',
+  'sound',
 ];
 
 describe('словари библиотеки', () => {

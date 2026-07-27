@@ -3,10 +3,9 @@ import { useTranslation } from 'react-i18next';
 /**
  * Содержимое выпадающего меню шестерёнки (M/game/SettingsSheet.tsx), без
  * подборщика треков — список треков знает только звуковой движок игры, а его
- * у библиотеки нет. Строки Music/SFX/How to play отсутствуют в словаре
- * библиотеки (это namespace самой игры, не profile/wallet/...), поэтому идут
- * через t(key, fallback) на уже существующем неймспейсе `common` — тот же
- * приём, что и `t('common.max', 'MAX')` в BetAmountInput.
+ * у библиотеки нет. Строки Music/SFX/How to play — неймспейс `sound` словаря
+ * библиотеки (панель звука переехала в библиотеку на Task 19, вместе с ней и
+ * подписи).
  */
 export function SettingsMenu({
   onHowToPlay,
@@ -44,9 +43,9 @@ export function SettingsMenu({
               <circle cx="18" cy="16" r="3" />
             </svg>
           </span>
-          <span className="hud-fm-sml">{t('common.music', 'Music')}</span>
+          <span className="hud-fm-sml">{t('sound.music')}</span>
           <span className={'hud-fm-sms' + (musicOn ? '' : ' hud-off')}>
-            {musicOn ? t('common.on', 'on') : t('common.off', 'off')}
+            {musicOn ? t('sound.on') : t('sound.off')}
           </span>
         </button>
       )}
@@ -66,9 +65,9 @@ export function SettingsMenu({
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
             </svg>
           </span>
-          <span className="hud-fm-sml">{t('common.sfx', 'Game sounds')}</span>
+          <span className="hud-fm-sml">{t('sound.sfx')}</span>
           <span className={'hud-fm-sms' + (sfxOn ? '' : ' hud-off')}>
-            {sfxOn ? t('common.on', 'on') : t('common.off', 'off')}
+            {sfxOn ? t('sound.on') : t('sound.off')}
           </span>
         </button>
       )}
@@ -87,7 +86,7 @@ export function SettingsMenu({
             <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
         </span>
-        <span className="hud-fm-sml">{t('common.how_to_play', 'How to play')}</span>
+        <span className="hud-fm-sml">{t('sound.how')}</span>
       </button>
     </div>
   );
