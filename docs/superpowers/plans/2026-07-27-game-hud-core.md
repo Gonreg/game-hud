@@ -829,7 +829,7 @@ export const FAKE_REFERRALS: Referrals = {
   refCode: 'ABC123',
   refLink: 'https://t.me/test_bot?start=ABC123',
   invitedCount: 2,
-  totalEarnedTon: 1.25,
+  totalEarned: 1.25,
   ratePercent: 10,
   refBalance: 1.25,
   invitees: [
@@ -2520,7 +2520,10 @@ Expected: FAIL — `Failed to resolve import "./ReferralsScreen"`.
   из `data?.refLink`
 - пока `loading` — рендерить `<Skeleton rows={4} />` из `../primitives/Skeleton`
 - при `error` — `<div className="hud-profile-error">{error}</div>`
-- T5 для `totalEarnedTon`, `refBalance` и `earnedFromThemTon` у каждого приглашённого
+- T5 для `totalEarned`, `refBalance` и `earnedFromThem` у каждого приглашённого
+- хардкод литерала `' TON'` в JSX (`F/components/profile/ReferralsScreen.tsx:103,108,140`)
+  заменить на `useHudConfig().currency` — иначе у matreshka в кабинете будет TON вместо
+  GRAM
 
 В `ProfileShell.tsx` заменить заглушку на `{screen === 'referrals' && <ReferralsScreen />}`.
 
