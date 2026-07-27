@@ -13,11 +13,11 @@ export function BalanceChip({ balance, icon }: { balance: number | null; icon?: 
   return (
     <button
       type="button"
-      className="hud-bal-chip"
+      className="hud-balance-chip"
       onClick={() => openWallet('deposit')}
       aria-label={t('wallet.title')}
     >
-      <span className="hud-bal-num">{fmtAmount(balance)}</span>
+      <span>{fmtAmount(balance)}</span>
       {icon}
     </button>
   );

@@ -33,6 +33,20 @@ describe('верхний HUD', () => {
     expect(useHudStore.getState()).toMatchObject({ open: true, screen: 'hub' });
   });
 
+  it('носит классы позиционирования fatman, а не раскладки TopBar', () => {
+    // Ровно эта ошибка уже приводила к тому, что пилюля и аватар
+    // отрисовывались за игровой сценой и были не видны.
+    const { container } = renderWithHud(<BalanceChip balance={7} />);
+    expect(container.querySelector('.hud-balance-chip')).toBeInTheDocument();
+  });
+
+  it('аватар носит класс позиционирования fatman, а не раскладки TopBar', () => {
+    // Та же ошибка: класс matreshka не позиционируется абсолютно, и кнопка
+    // профиля отрисовывалась за игровой сценой и была не видна.
+    const { container } = renderWithHud(<ProfileAvatarButton />);
+    expect(container.querySelector('.hud-profile-avatar-chip')).toBeInTheDocument();
+  });
+
   it('шестерёнка раскрывает меню', async () => {
     renderWithHud(<SettingsButton onHowToPlay={() => {}} />);
     await userEvent.click(screen.getByRole('button', { expanded: false }));

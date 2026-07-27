@@ -1159,6 +1159,15 @@
   position: relative;
   z-index: 20;
 }
+/* Внутри готовой раскладки TopBar элементы стоят во флекс-строке, а не
+   позиционируются абсолютно — как это делает fatman, расставляющий их сам. */
+.hud-topbar .hud-balance-chip,
+.hud-topbar .hud-profile-avatar-chip {
+  position: static;
+  top: auto;
+  left: auto;
+  right: auto;
+}
 .hud-bal-chip {
   display: inline-flex;
   align-items: center;
