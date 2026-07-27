@@ -840,7 +840,9 @@ export const FAKE_STATS: Stats = {
   totalWagered: 100,
   totalWon: 120,
   netProfit: 20,
-  winrate: 0.55,
+  // Проценты, а не доля: экран рисует winrate.toFixed(1) + '%', то есть бэк
+  // отдаёт значение уже в процентах. С долей 0.55 экран показал бы «0.6%».
+  winrate: 55,
   bestStreak: 4,
   avgBet: 2.4,
   biggestWin: 30,
@@ -2713,6 +2715,12 @@ Expected: FAIL — `Failed to resolve import "./StatsScreen"`.
 Взять `F/components/profile/StatsScreen.tsx`. Применить T1–T7, плюс:
 - два запроса: `useHudResource('stats', (a) => a.getStats())` и
   `useHudResource('percentiles', (a) => a.getPercentiles())`
+- **хардкод литерала `' TON'`** — в fatman он повторяется примерно семь раз
+  (`StatsScreen.tsx:107,121,128,135,142,149,163` и рядом) — заменить на
+  `useHudConfig().currency`, иначе у matreshka в статистике светился бы TON
+  вместо GRAM. Это та же правка, что уже сделана в экране рефералов
+- `winrate` приходит **в процентах**, а не долей: экран рисует
+  `winrate.toFixed(1) + '%'`. Ничего домножать не надо
 - скелетон, пока грузится основная статистика; перцентили рисуются по мере готовности
   и их отсутствие экран не блокирует
 - при ошибке основной статистики — `<div className="hud-profile-error">{error}</div>`
