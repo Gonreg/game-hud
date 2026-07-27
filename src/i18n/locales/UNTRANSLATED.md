@@ -25,3 +25,11 @@
 - `notifications.cashback_credited`
 - `notifications.bonus_expiring`
 - `notifications.referral_big_win`
+
+## Почему здесь английский текст, а не отсутствие ключа
+
+Полагаться на `fallbackLng` в i18next нельзя: его настраивает игра, и настроен он
+по-разному — `'en'` у fatman и molot, `['en', 'ru']` у matreshka, а у crash-race и
+basketball `'ru'`. Убрав эти ключи, мы бы показали испаноязычному игроку в двух играх
+из шести русский текст вместо английского. Поэтому английская строка лежит в словаре
+явно, а не подставляется фолбэком.

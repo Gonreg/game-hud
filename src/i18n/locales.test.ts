@@ -34,12 +34,16 @@ describe('словари библиотеки', () => {
   });
 
   it('каждый язык покрывает все ключи английского', () => {
+    // Ассерт снаружи цикла, а не внутри: иначе тест падает на первом же языке и
+    // остальные остаются непроверенными в этом прогоне. Собираем полную картину.
     const base = flatKeys(hudLocales.en);
+    const report: Record<string, string[]> = {};
     for (const [lang, dict] of Object.entries(hudLocales)) {
       const has = new Set(flatKeys(dict));
       const missing = base.filter((k) => !has.has(k));
-      expect(missing, `не переведено в ${lang}`).toEqual([]);
+      if (missing.length) report[lang] = missing;
     }
+    expect(report).toEqual({});
   });
 
   it('не тащит ключей, которых нет в английском', () => {
@@ -47,11 +51,16 @@ describe('словари библиотеки', () => {
     // ключи старой, немигрированной схемы уведомлений (notifications.deposits,
     // .withdrawals, .referrals, .big_wins), которых в en и ru уже нет. Без этого
     // теста они молча уехали бы в npm-пакет как мёртвый груз.
+    //
+    // Ассерт, как и выше, снаружи цикла — собираем полную картину лишних ключей
+    // по всем языкам за один прогон, а не падаем на первом же несовпадении.
     const base = new Set(flatKeys(hudLocales.en));
+    const report: Record<string, string[]> = {};
     for (const [lang, dict] of Object.entries(hudLocales)) {
       const extra = flatKeys(dict).filter((k) => !base.has(k));
-      expect(extra, `лишние ключи в ${lang}`).toEqual([]);
+      if (extra.length) report[lang] = extra;
     }
+    expect(report).toEqual({});
   });
 
   it('ключ profile.title на месте — по нему провайдер проверяет подмешивание', () => {
