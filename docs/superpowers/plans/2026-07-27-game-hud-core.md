@@ -2885,9 +2885,10 @@ import {
 } from '../test/fakeAdapter';
 
 describe('NotificationsScreen', () => {
-  it('рисует все 11 переключателей', async () => {
+  it('рисует общий переключатель и все 11 частных', async () => {
     renderWithHud(<NotificationsScreen />);
-    await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(11));
+    // Двенадцать, а не одиннадцать: сверху есть мастер-тумблер «включить всё».
+    await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(12));
   });
 
   it('расставляет положения по ответу сервера', async () => {
@@ -2925,7 +2926,7 @@ describe('NotificationsScreen', () => {
 
   it('ссылается на бота из конфига, а не на захардкоженного', async () => {
     renderWithHud(<NotificationsScreen />, { config: { botUsername: 'my_bot' } });
-    await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(11));
+    await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(12));
     // В fatman это кнопка с текстом «@bot», открывающая t.me через Telegram
     // SDK, а не ссылка с href — поэтому ищем по тексту, а не по role="link".
     expect(screen.getByText('@my_bot')).toBeInTheDocument();
