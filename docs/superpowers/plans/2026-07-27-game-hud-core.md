@@ -637,7 +637,10 @@ import { useHudStore } from './hudStore';
 
 describe('useHudStore', () => {
   beforeEach(() => {
-    useHudStore.setState({ open: false, screen: 'hub', walletFocus: null, helpTheme: null });
+    // Форму начального состояния берём из самого стора, а не переписываем руками:
+    // иначе новое поле в HudState придётся не забыть добавить и здесь, а забыв —
+    // получить не упавший тест, а молча текущее между it-блоками состояние.
+    useHudStore.setState(useHudStore.getInitialState());
   });
 
   it('стартует закрытым на хабе', () => {
@@ -679,6 +682,17 @@ describe('useHudStore', () => {
       screen: 'help',
       helpTheme: 'finance',
     });
+  });
+
+  it('setScreen ходит внутри уже открытого кабинета, не открывая его сам', () => {
+    useHudStore.getState().setScreen('stats');
+    expect(useHudStore.getState()).toMatchObject({ open: false, screen: 'stats' });
+  });
+
+  it('clearHelpTheme гасит тему, не закрывая экран', () => {
+    useHudStore.getState().openHelpWithTheme('bug');
+    useHudStore.getState().clearHelpTheme();
+    expect(useHudStore.getState()).toMatchObject({ screen: 'help', helpTheme: null });
   });
 
   it('close закрывает оверлей', () => {
@@ -749,6 +763,10 @@ export const useHudStore = create<HudState>((set) => ({
   close: () => set({ open: false }),
   setScreen: (screen) => set({ screen }),
   openWalletWithFocus: (focus) => set({ open: true, screen: 'wallet', walletFocus: focus }),
+  // walletFocus и helpTheme — одноразовые: экран, который их применил, обязан их
+  // погасить. Гасить надо в useEffect при монтировании (`if (!focus) return; …;
+  // clear()`), а не в обработчике клика — тогда очистка привязана к жизненному
+  // циклу экрана, а не к дисциплине разработчика в множестве мест.
   clearWalletFocus: () => set({ walletFocus: null }),
   openHelpWithTheme: (theme) => set({ open: true, screen: 'help', helpTheme: theme }),
   clearHelpTheme: () => set({ helpTheme: null }),
@@ -758,7 +776,7 @@ export const useHudStore = create<HudState>((set) => ({
 - [ ] **Step 4: Прогнать тесты**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run src/store/hudStore.test.ts`
-Expected: 7 passed.
+Expected: 9 passed.
 
 - [ ] **Step 5: Коммит**
 
