@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { HistoryScreen } from './HistoryScreen';
@@ -48,5 +49,23 @@ describe('HistoryScreen', () => {
     renderWithHud(<HistoryScreen />, { adapter });
     // history.kind.withdraw = «Withdrawal», сырой ключ показываться не должен.
     await waitFor(() => expect(screen.getByText(/withdrawal/i)).toBeInTheDocument());
+  });
+
+  // Буквальный вариант из ревью (rerender(<HistoryScreen />) без обёрток) не
+  // воспроизводит баг: renderWithHud не даёт rerender, сохраняющий провайдеры,
+  // и голый rerender роняет тест на «Хук вызван вне HudProvider» ещё до
+  // проверки дублей. StrictMode честно эмулирует повторный вызов эффекта на
+  // одном и том же смонтированном инстансе — то, от чего действительно едет
+  // список.
+  it('не удваивает первую страницу при повторном вызове эффекта (StrictMode)', async () => {
+    const adapter = makeFakeAdapter();
+    renderWithHud(
+      <StrictMode>
+        <HistoryScreen />
+      </StrictMode>,
+      { adapter },
+    );
+    await waitFor(() => expect(adapter.getTransactions).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getAllByText(/5\.00/)).toHaveLength(1));
   });
 });

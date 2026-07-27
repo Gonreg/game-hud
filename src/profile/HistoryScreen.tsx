@@ -37,7 +37,11 @@ export function HistoryScreen() {
       setLoading(true);
       try {
         const r = await adapter.getTransactions(cur);
-        setItems((prev) => [...prev, ...r.items.map(decorate)]);
+        const rows = r.items.map(decorate);
+        // Первая страница заменяет список, остальные дописывают. Иначе
+        // повторный вызов эффекта (StrictMode, возврат на экран) удваивает
+        // строки: дописывание не идемпотентно.
+        setItems((prev) => (cur === undefined ? rows : [...prev, ...rows]));
         setCursor(r.nextCursor);
       } catch (e) {
         setError((e as Error).message);
