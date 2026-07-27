@@ -5,8 +5,18 @@
  * мусорная строка дала бы `new Date(...).toLocaleString()` === «Invalid Date».
  * Рисуем дату только когда она есть и действительно разбирается.
  */
-export function formatWhen(raw: string | undefined, locale: string): string | null {
+export function formatWhen(
+  raw: string | undefined,
+  locale: string,
+  /**
+   * `'datetime'` — история раундов: там время отличает соседние ставки.
+   * `'date'` — список выводов: так было в fatman, который остаётся каноном
+   * визуала, и менять это ради переиспользования функции не стоит.
+   */
+  mode: 'datetime' | 'date' = 'datetime',
+): string | null {
   if (!raw) return null;
   const d = new Date(raw);
-  return Number.isNaN(d.getTime()) ? null : d.toLocaleString(locale);
+  if (Number.isNaN(d.getTime())) return null;
+  return mode === 'date' ? d.toLocaleDateString(locale) : d.toLocaleString(locale);
 }

@@ -220,7 +220,8 @@ export function WalletScreen() {
             <Skeleton rows={2} />
           ) : (
             withdrawals.data?.map((w) => {
-              const when = formatWhen(w.createdAt, i18n.language || 'en');
+              // Только дата, без времени — так этот список выглядел в fatman.
+              const when = formatWhen(w.createdAt, i18n.language || 'en', 'date');
               return (
                 <div key={w.id} className="hud-wallet-withdrawals__row">
                   <span>{fmtAmount(w.amount)}</span>
