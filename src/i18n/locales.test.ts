@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hudLocales, SUPPORTED_LANGUAGES } from './index';
+import { hudLocales, mergeHudLocales, SUPPORTED_LANGUAGES } from './index';
 
 function flatKeys(obj: unknown, prefix = ''): string[] {
   if (obj === null || typeof obj !== 'object') return [prefix];
@@ -66,5 +66,46 @@ describe('словари библиотеки', () => {
 
   it('ключ profile.title на месте — по нему провайдер проверяет подмешивание', () => {
     expect(hudLocales.en.profile).toHaveProperty('title');
+  });
+});
+
+describe('mergeHudLocales', () => {
+  it('сливает вложенные неймспейсы, а не затирает их целиком', () => {
+    const hud = { wallet: { title: 'Кошелёк', deposit: 'Пополнить' } };
+    const game = { wallet: { deposit: 'Внести' } };
+    expect(mergeHudLocales(hud, game)).toEqual({
+      wallet: { title: 'Кошелёк', deposit: 'Внести' },
+    });
+  });
+
+  it('сливает и третий уровень — виды операций в истории', () => {
+    const hud = { history: { kind: { bet: 'Ставка', win: 'Выигрыш' } } };
+    const game = { history: { kind: { win: 'Победа' } } };
+    expect(mergeHudLocales(hud, game)).toEqual({
+      history: { kind: { bet: 'Ставка', win: 'Победа' } },
+    });
+  });
+
+  it('значение игры побеждает при совпадении ключа', () => {
+    expect(mergeHudLocales({ common: { max: 'MAX' } }, { common: { max: 'ВСЁ' } })).toEqual({
+      common: { max: 'ВСЁ' },
+    });
+  });
+
+  it('неймспейсы игры, которых нет в библиотеке, проходят насквозь', () => {
+    expect(mergeHudLocales({ common: { max: 'MAX' } }, { game: { start: 'Старт' } })).toEqual({
+      common: { max: 'MAX' },
+      game: { start: 'Старт' },
+    });
+  });
+
+  it('после слияния с реальным словарём игры не теряется ни один ключ библиотеки', async () => {
+    // Ровно этот дефект дал 36 сырых ключей в crash-race: спред затирал
+    // библиотечный неймспейс целиком, если у игры был свой такой же.
+    const gameLike = { wallet: { deposit: 'Внести' }, game: { start: 'Старт' } };
+    const merged = mergeHudLocales(hudLocales.ru as never, gameLike);
+    for (const key of Object.keys(hudLocales.ru.wallet)) {
+      expect(merged.wallet, `потерян ключ wallet.${key}`).toHaveProperty(key);
+    }
   });
 });
