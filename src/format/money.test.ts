@@ -14,8 +14,11 @@ describe('fmtAmount', () => {
   });
 
   it('не превращает NaN и Infinity в мусор на экране', () => {
+    // Предупреждение здесь ожидаемо — глушим, чтобы вывод тестов оставался чистым.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(fmtAmount(Number.NaN)).toBe('0.00');
     expect(fmtAmount(Number.POSITIVE_INFINITY)).toBe('0.00');
+    warn.mockRestore();
   });
 
   it('печатает отрицательные суммы со знаком', () => {

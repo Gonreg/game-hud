@@ -180,11 +180,15 @@ F/App.tsx                      замена локальных компонен�
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
   "include": ["src", "demo", "vitest.setup.ts"]
 }
 ```
+
+`vite/client` в `types` обязателен: без него `import.meta.env.DEV`, на который опираются
+dev-предупреждения в `fmtAmount` и `HudProvider`, не типизируется и `tsc` падает с
+`TS2339: Property 'env' does not exist on type 'ImportMeta'`.
 
 `L/vite.config.ts`:
 
@@ -278,8 +282,11 @@ describe('fmtAmount', () => {
   });
 
   it('не превращает NaN и Infinity в мусор на экране', () => {
+    // Предупреждение здесь ожидаемо — глушим, чтобы вывод тестов оставался чистым.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(fmtAmount(Number.NaN)).toBe('0.00');
     expect(fmtAmount(Number.POSITIVE_INFINITY)).toBe('0.00');
+    warn.mockRestore();
   });
 
   it('печатает отрицательные суммы со знаком', () => {
