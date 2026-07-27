@@ -42,6 +42,18 @@ describe('словари библиотеки', () => {
     }
   });
 
+  it('не тащит ключей, которых нет в английском', () => {
+    // Односторонней проверки выше недостаточно: fatman для восьми языков хранит
+    // ключи старой, немигрированной схемы уведомлений (notifications.deposits,
+    // .withdrawals, .referrals, .big_wins), которых в en и ru уже нет. Без этого
+    // теста они молча уехали бы в npm-пакет как мёртвый груз.
+    const base = new Set(flatKeys(hudLocales.en));
+    for (const [lang, dict] of Object.entries(hudLocales)) {
+      const extra = flatKeys(dict).filter((k) => !base.has(k));
+      expect(extra, `лишние ключи в ${lang}`).toEqual([]);
+    }
+  });
+
   it('ключ profile.title на месте — по нему провайдер проверяет подмешивание', () => {
     expect(hudLocales.en.profile).toHaveProperty('title');
   });

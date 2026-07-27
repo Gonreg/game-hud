@@ -131,10 +131,6 @@
   },
   "notifications": {
     "title": "اطلاعات",
-    "deposits": "جمع موصول ہوا",
-    "withdrawals": "نکاسی مکمل",
-    "referrals": "ریفرل نے جمع کرایا",
-    "big_wins": "بڑی جیت (>10×)",
     "footer": "اطلاعات بوٹ چیٹ میں آتی ہیں۔",
     "master": "تمام اطلاعات",
     "deposit_credited": "جمع کریڈٹ ہوا",

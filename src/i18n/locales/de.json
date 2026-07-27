@@ -131,10 +131,6 @@
   },
   "notifications": {
     "title": "Benachrichtigungen",
-    "deposits": "Einzahlung gutgeschrieben",
-    "withdrawals": "Auszahlung verarbeitet",
-    "referrals": "Empfehlung hat eingezahlt",
-    "big_wins": "Großer Gewinn (>10×)",
     "footer": "Benachrichtigungen kommen in den Bot-Chat.",
     "master": "Alle Benachrichtigungen",
     "deposit_credited": "Einzahlung gutgeschrieben",

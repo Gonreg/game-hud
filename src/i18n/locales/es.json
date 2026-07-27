@@ -131,10 +131,6 @@
   },
   "notifications": {
     "title": "Notificaciones",
-    "deposits": "Depósito acreditado",
-    "withdrawals": "Retiro procesado",
-    "referrals": "Referido depositó",
-    "big_wins": "Gran ganancia (>10×)",
     "footer": "Las notificaciones llegan al chat del bot.",
     "master": "Todas las notificaciones",
     "deposit_credited": "Depósito acreditado",

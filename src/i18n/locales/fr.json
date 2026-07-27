@@ -131,10 +131,6 @@
   },
   "notifications": {
     "title": "Notifications",
-    "deposits": "Dépôt crédité",
-    "withdrawals": "Retrait traité",
-    "referrals": "Filleul a déposé",
-    "big_wins": "Gros gain (>10×)",
     "footer": "Les notifications arrivent dans le chat du bot.",
     "master": "Toutes les notifications",
     "deposit_credited": "Dépôt crédité",
