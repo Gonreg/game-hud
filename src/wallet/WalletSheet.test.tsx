@@ -61,4 +61,33 @@ describe('WalletSheet', () => {
     await userEvent.click(buttons[buttons.length - 1]);
     await waitFor(() => expect(adapter.postWithdraw).toHaveBeenCalledWith(2, 'EQUserWallet'));
   });
+
+  it('показывает переданный баланс вместо баланса из getMe', async () => {
+    // FAKE_ME.balance = 12.5 — если бы приоритет был неверным, увидели бы его.
+    const { container } = renderWithHud(<WalletSheet open onClose={() => {}} balance={999} />);
+    await waitFor(() =>
+      expect(container.querySelector('.hud-wallet-sheet-balance__value')).toHaveTextContent(
+        '999.00',
+      ),
+    );
+  });
+
+  it('вывод доступен при подключённом TonConnect, если бэк не умеет привязку', async () => {
+    const adapter = makeFakeAdapter(); // без postWalletLink
+    renderWithHud(<WalletSheet open onClose={() => {}} />, { adapter });
+    const tabs = await screen.findAllByRole('button', { name: /^withdraw$/i });
+    await userEvent.click(tabs[0]);
+    const buttons = screen.getAllByRole('button', { name: /^withdraw$/i });
+    expect(buttons[buttons.length - 1]).not.toBeDisabled();
+  });
+
+  it('блокирует вывод и просит привязать кошелёк, если бэк умеет привязку, а она не сделана', async () => {
+    const adapter = makeFakeAdapter({ postWalletLink: vi.fn(async () => {}) });
+    renderWithHud(<WalletSheet open onClose={() => {}} />, { adapter });
+    const tabs = await screen.findAllByRole('button', { name: /^withdraw$/i });
+    await userEvent.click(tabs[0]);
+    const buttons = screen.getAllByRole('button', { name: /^withdraw$/i });
+    expect(buttons[buttons.length - 1]).toBeDisabled();
+    expect(screen.getByText('Link a wallet first')).toBeInTheDocument();
+  });
 });

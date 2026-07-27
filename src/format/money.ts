@@ -20,8 +20,16 @@ export function fmtAmount(value: number | null | undefined): string {
   if (import.meta.env.DEV && typeof value === 'number' && !finite) {
     console.warn(`[game-hud] fmtAmount получил ${String(value)} — проверь арифметику адаптера`);
   }
-  const text = (finite ? value : 0).toFixed(2);
-  // toFixed сохраняет знак у почти нулевых отрицательных: -0.001 → '-0.00'.
+  const n = finite ? value : 0;
+  // Разделители тысяч: на балансе в несколько тысяч «1,234.50» читается заметно
+  // лучше, чем «1234.50». Две цифры после запятой всегда — денежная конвенция.
+  // Локаль зафиксирована: разделитель не должен скакать от языка интерфейса,
+  // иначе одна и та же сумма выглядит по-разному на десяти языках.
+  const text = n.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  // toLocaleString сохраняет знак у почти нулевых отрицательных: -0.001 → «-0.00».
   // В балансе это читается как поломка, поэтому у нулевого результата знак снимаем.
   return text === '-0.00' ? '0.00' : text;
 }

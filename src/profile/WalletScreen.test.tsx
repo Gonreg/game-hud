@@ -71,4 +71,19 @@ describe('WalletScreen', () => {
       expect(container.querySelector('.hud-wallet-withdrawals')).toBeInTheDocument(),
     );
   });
+
+  it('вывод доступен при подключённом TonConnect, если бэк не умеет привязку', async () => {
+    const adapter = makeFakeAdapter(); // без postWalletLink
+    renderWithHud(<WalletScreen />, { adapter });
+    await screen.findByPlaceholderText(/amount/i);
+    expect(screen.getByRole('button', { name: /withdraw/i })).not.toBeDisabled();
+  });
+
+  it('блокирует вывод и просит привязать кошелёк, если бэк умеет привязку, а она не сделана', async () => {
+    const adapter = makeFakeAdapter({ postWalletLink: vi.fn(async () => {}) });
+    renderWithHud(<WalletScreen />, { adapter });
+    await screen.findByPlaceholderText(/amount/i);
+    expect(screen.getByRole('button', { name: /withdraw/i })).toBeDisabled();
+    expect(screen.getByText('Link a wallet first')).toBeInTheDocument();
+  });
 });

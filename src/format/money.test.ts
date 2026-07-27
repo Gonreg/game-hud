@@ -5,7 +5,7 @@ describe('fmtAmount', () => {
   it('печатает два знака после запятой', () => {
     expect(fmtAmount(1.5)).toBe('1.50');
     expect(fmtAmount(0)).toBe('0.00');
-    expect(fmtAmount(1234.567)).toBe('1234.57');
+    expect(fmtAmount(1234.567)).toBe('1,234.57');
   });
 
   it('считает null и undefined нулём, а не падает', () => {
@@ -43,5 +43,10 @@ describe('fmtAmount', () => {
     fmtAmount(undefined);
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+
+  it('ставит разделители тысяч, чтобы крупный баланс читался', () => {
+    expect(fmtAmount(1234.5)).toBe('1,234.50');
+    expect(fmtAmount(1000000)).toBe('1,000,000.00');
   });
 });

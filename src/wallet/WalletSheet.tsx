@@ -29,10 +29,22 @@ function commentPayload(text: string): string {
  * значит компонент-тело со своими хуками (в первую очередь useHudResource
  * → getMe) не монтируется и не дёргает адаптер, пока шит закрыт.
  */
-export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function WalletSheet({
+  open,
+  onClose,
+  balance,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /**
+   * Живой баланс от игры. Во время раунда игра гоняет его через свой стор по
+   * WebSocket, а REST-снимок из getMe отстаёт. Не передан — берём из getMe.
+   */
+  balance?: number | null;
+}) {
   return (
     <BottomSheet open={open} onClose={onClose} labelledBy="hud-wallet-sheet-title">
-      <WalletSheetBody onClose={onClose} />
+      <WalletSheetBody onClose={onClose} balance={balance} />
     </BottomSheet>
   );
 }
@@ -42,7 +54,7 @@ export function WalletSheet({ open, onClose }: { open: boolean; onClose: () => v
  * показа адреса депозита (уходит прямо в TonConnect) — этого нет ни в
  * fatman, ни в matreshka, и мы это уже вычистили из WalletScreen.
  */
-function WalletSheetBody({ onClose }: { onClose: () => void }) {
+function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: number | null }) {
   const { t } = useTranslation();
   const adapter = useHudAdapter();
   const currency = useHudConfig().currency;
@@ -50,6 +62,10 @@ function WalletSheetBody({ onClose }: { onClose: () => void }) {
   const address = useTonAddress();
   const me = useHudResource('me', (a) => a.getMe());
   const hasWalletLink = typeof adapter.postWalletLink === 'function';
+  // Бэк умеет привязку (есть postWalletLink) — значит он и решает, куда выводить,
+  // и до привязки вывод бессмысленно отправлять. Бэк без привязки (matreshka)
+  // выводит на адрес, который мы передаём из TonConnect, — там гейт по адресу.
+  const canWithdraw = hasWalletLink ? Boolean(me.data?.walletAddress) : Boolean(address);
 
   const [tab, setTab] = useState<'deposit' | 'withdraw'>('deposit');
   const [amount, setAmount] = useState('1');
@@ -144,7 +160,7 @@ function WalletSheetBody({ onClose }: { onClose: () => void }) {
       <div className="hud-wallet-sheet-balance">
         <div className="hud-wallet-sheet-balance__label">{t('wallet.balance_label')}</div>
         <div className="hud-wallet-sheet-balance__value">
-          {fmtAmount(me.data?.balance ?? null)} <span>{currency}</span>
+          {fmtAmount(balance ?? me.data?.balance ?? null)} <span>{currency}</span>
         </div>
       </div>
 
@@ -230,11 +246,13 @@ function WalletSheetBody({ onClose }: { onClose: () => void }) {
             type="button"
             className="hud-ton-info-cta hud-wallet-sheet-withdraw-cta"
             onClick={() => void withdraw()}
-            disabled={busy}
+            disabled={busy || !canWithdraw}
           >
             {t('wallet.withdraw_btn')}
           </button>
-          <p className="hud-wallet-sheet-hint">{t('wallet.withdraw_hint')}</p>
+          <p className="hud-wallet-sheet-hint">
+            {canWithdraw ? t('wallet.withdraw_hint') : t('wallet.need_link')}
+          </p>
         </div>
       )}
 

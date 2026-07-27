@@ -47,6 +47,10 @@ export function WalletScreen() {
   }, [focus, clearFocus]);
 
   const hasWalletLink = typeof adapter.postWalletLink === 'function';
+  // Бэк умеет привязку (есть postWalletLink) — значит он и решает, куда выводить,
+  // и до привязки вывод бессмысленно отправлять. Бэк без привязки (matreshka)
+  // выводит на адрес, который мы передаём из TonConnect, — там гейт по адресу.
+  const canWithdraw = hasWalletLink ? Boolean(me.data?.walletAddress) : Boolean(address);
 
   async function deposit() {
     if (!address) {
@@ -196,14 +200,14 @@ export function WalletScreen() {
           onChange={(e) => setWithdrawAmount(e.target.value)}
         />
         <div style={{ fontSize: 11, color: '#9aa3c4', marginTop: 6 }}>
-          {t('wallet.withdraw_hint')}
+          {canWithdraw ? t('wallet.withdraw_hint') : t('wallet.need_link')}
         </div>
         <button
           type="button"
           className="hud-profile-btn"
           style={{ marginTop: 10 }}
           onClick={() => void withdraw()}
-          disabled={busy}
+          disabled={busy || !canWithdraw}
         >
           {t('wallet.withdraw_btn')}
         </button>
