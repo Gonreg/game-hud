@@ -160,7 +160,7 @@ src/
   wallet/
     WalletSheet.tsx       боттом-шит депозит/вывод (вызов из HUD)
   primitives/
-    BottomSheet.tsx  Modal.tsx  InfoPopover.tsx  Skeleton.tsx  icons.tsx
+    BottomSheet.tsx  InfoPopover.tsx  Skeleton.tsx  icons.tsx
   theme/
     styles.css            единая тема JUBB
     useTelegramSafeArea.ts
@@ -234,10 +234,7 @@ interface HudAdapter {
 и передаёт его в провайдер:
 
 ```tsx
-<HudProvider
-  adapter={myAdapter}
-  config={{ botUsername, currency: 'GRAM', minBet, maxBet }}
->
+<HudProvider adapter={myAdapter} config={{ botUsername, currency: 'GRAM', minBet, maxBet }}>
   <App />
 </HudProvider>
 ```
