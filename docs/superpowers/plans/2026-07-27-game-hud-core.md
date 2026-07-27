@@ -1446,7 +1446,9 @@ describe('useTelegramSafeArea', () => {
 
   it('не падает вне Telegram и обнуляет переменные', () => {
     const saved = window.Telegram;
-    // @ts-expect-error — проверяем поведение в обычном браузере
+    // Telegram в Window объявлен опциональным, так что undefined — валидное
+    // значение по типам; проверяем поведение вне Telegram, а не ошибку типов.
+    // (@ts-expect-error здесь был бы лишней директивой и уронил бы tsc.)
     window.Telegram = undefined;
     renderHook(() => useTelegramSafeArea());
     expect(readVar('--hud-safe-top')).toBe('0px');
