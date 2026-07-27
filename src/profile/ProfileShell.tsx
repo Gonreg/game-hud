@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { ProfileHub } from './ProfileHub';
 import { WalletScreen } from './WalletScreen';
+import { HistoryScreen } from './HistoryScreen';
+import { ReferralsScreen } from './ReferralsScreen';
 import { LegalFooter } from './LegalFooter';
 import { IconArrowLeft, IconClose } from '../primitives/icons';
 
@@ -70,8 +72,8 @@ export function ProfileShell() {
         <div className="hud-profile-screen" key={screen}>
           {screen === 'hub' && <ProfileHub />}
           {screen === 'wallet' && <WalletScreen />}
-          {screen === 'history' && null /* TODO: Task 13 */}
-          {screen === 'referrals' && null /* TODO: Task 14 */}
+          {screen === 'history' && <HistoryScreen />}
+          {screen === 'referrals' && <ReferralsScreen />}
           {screen === 'stats' && null /* TODO: Task 15 */}
           {screen === 'leaderboard' && null /* TODO: Task 16 */}
           {screen === 'notifications' && null /* TODO: Task 17 */}
