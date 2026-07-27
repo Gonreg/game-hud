@@ -1917,8 +1917,15 @@ git commit -m "feat(primitives): иконки, боттом-шит, popover, с�
 - [ ] **Step 1: Отфильтровать словари**
 
 Для каждого из 10 языков взять `F/i18n/locales/<lang>.json` и оставить только
-неймспейсы библиотеки. Игровые (`sound`, `app`, `round`, `bet`, `result`, `tweaks`)
+неймспейсы библиотеки. Игровые (`app`, `round`, `bet`, `result`, `tweaks`)
 выбросить.
+
+**Правка после Task 19:** неймспейс `sound` изначально считался игровым, но на
+Task 19 панель звука и меню шестерёнки переехали в библиотеку — значит и подписи
+тоже. Ключи `sound.title`, `sound.music`, `sound.sfx`, `sound.on`, `sound.off`,
+`sound.how` добавляются в словари библиотеки, а `HUD_NAMESPACES` в
+`locales.test.ts` пополняется значением `sound`. Названия музыкальных треков
+(`sound.track_*`) остаются у игры и передаются пропсами: они у каждой игры свои.
 
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud && mkdir -p src/i18n/locales && \
