@@ -219,7 +219,17 @@ import dts from 'vite-plugin-dts';
 import path from 'node:path';
 
 export default defineConfig({
-  plugins: [react(), dts({ include: ['src'], rollupTypes: false })],
+  plugins: [
+    react(),
+    // Без exclude плагин обходит весь src/ по глобу и генерирует .d.ts для
+    // тестов и тестовых хелперов. Исполняемого .js для них в бандле нет, зато
+    // IDE игры предложит автоимпорт из dist/test/fakeAdapter, который упадёт.
+    dts({
+      include: ['src'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      rollupTypes: false,
+    }),
+  ],
   build: {
     lib: {
       entry: {
@@ -902,6 +912,11 @@ export const FAKE_PREFS: NotificationPrefs = {
   comeback_7d: false,
 };
 
+/** Сколько переключателей в FAKE_PREFS включено — тест уведомлений сверяется с
+ *  этим числом, а не с захардкоженной четвёркой: изменится фикстура — число
+ *  пересчитается само, вместо того чтобы тест начал молча врать. */
+export const FAKE_PREFS_ENABLED_COUNT = Object.values(FAKE_PREFS).filter(Boolean).length;
+
 export const FAKE_DEPOSIT: Deposit = {
   address: 'EQTestAddress',
   comment: 'u1',
@@ -936,7 +951,13 @@ export function makeFakeAdapter(over: Partial<HudAdapter> = {}): HudAdapter {
   };
 }
 
-/** Адаптер, у которого всё падает — для проверки экранов ошибок. */
+/**
+ * Ломает восемь читающих методов — для проверки экрана загрузки и ошибки.
+ * Пишущие (`postWithdraw`, `postSupport`, `putNotificationPrefs`) остаются
+ * рабочими: у каждого экрана своя обработка ошибки записи со своим текстом,
+ * общего выключателя для них быть не может. Чтобы проверить ошибку записи,
+ * переопредели конкретный метод: `makeFakeAdapter({ postWithdraw: ... })`.
+ */
 export function makeFailingAdapter(message = 'boom'): HudAdapter {
   const fail = vi.fn(async () => {
     throw new Error(message);
@@ -1090,14 +1111,6 @@ import type { HudAdapter, HudConfig } from '../adapter/types';
 import { makeFakeAdapter } from './fakeAdapter';
 import en from '../i18n/locales/en.json';
 
-const testI18n = i18n.createInstance();
-void testI18n.use(initReactI18next).init({
-  lng: 'en',
-  fallbackLng: 'en',
-  resources: { en: { translation: en } },
-  interpolation: { escapeValue: false },
-});
-
 const DEFAULT_CONFIG: HudConfig = {
   botUsername: 'test_bot',
   currency: 'GRAM',
@@ -1110,6 +1123,18 @@ export function renderWithHud(
   ui: ReactElement,
   opts: { adapter?: HudAdapter; config?: Partial<HudConfig> } = {},
 ): RenderResult & { adapter: HudAdapter } {
+  // Инстанс создаётся на каждый вызов, а не один на модуль: экран выбора языка
+  // дёргает changeLanguage, и на модульном синглтоне выбранный язык протёк бы
+  // во все последующие тесты файла. При статических resources init синхронный,
+  // поэтому await не нужен и render остаётся синхронным.
+  const testI18n = i18n.createInstance();
+  void testI18n.use(initReactI18next).init({
+    lng: 'en',
+    fallbackLng: 'en',
+    resources: { en: { translation: en } },
+    interpolation: { escapeValue: false },
+  });
+
   const adapter = opts.adapter ?? makeFakeAdapter();
   const result = render(
     <I18nextProvider i18n={testI18n}>
@@ -2828,7 +2853,11 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { NotificationsScreen } from './NotificationsScreen';
 import { renderWithHud } from '../test/renderWithHud';
-import { makeFakeAdapter, makeFailingAdapter } from '../test/fakeAdapter';
+import {
+  makeFakeAdapter,
+  makeFailingAdapter,
+  FAKE_PREFS_ENABLED_COUNT,
+} from '../test/fakeAdapter';
 
 describe('NotificationsScreen', () => {
   it('рисует все 11 переключателей', async () => {
@@ -2839,9 +2868,9 @@ describe('NotificationsScreen', () => {
   it('расставляет положения по ответу сервера', async () => {
     renderWithHud(<NotificationsScreen />);
     const boxes = await screen.findAllByRole('checkbox');
-    // В FAKE_PREFS включены четыре: deposit_credited, withdraw_confirmed,
-    // withdraw_failed, big_win_self.
-    expect(boxes.filter((b) => (b as HTMLInputElement).checked)).toHaveLength(4);
+    expect(boxes.filter((b) => (b as HTMLInputElement).checked)).toHaveLength(
+      FAKE_PREFS_ENABLED_COUNT,
+    );
   });
 
   it('шлёт только изменённый ключ', async () => {
