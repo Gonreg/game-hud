@@ -2488,7 +2488,8 @@ describe('HistoryScreen', () => {
       getTransactions: vi.fn(async () => ({ items: [], nextCursor: null })),
     });
     renderWithHud(<HistoryScreen />, { adapter });
-    await waitFor(() => expect(screen.getByText(/no operations/i)).toBeInTheDocument());
+    // В словаре history.empty — «History is empty».
+    await waitFor(() => expect(screen.getByText(/history is empty/i)).toBeInTheDocument());
   });
 
   it('показывает ошибку, а не пустой экран', async () => {
@@ -2515,20 +2516,7 @@ describe('HistoryScreen', () => {
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run src/profile/HistoryScreen.test.tsx`
 Expected: FAIL — `Failed to resolve import "./HistoryScreen"`.
 
-- [ ] **Step 3: Добавить ключ пустого состояния**
-
-Проверить, есть ли `history.empty` в словарях, и при отсутствии добавить:
-
-```bash
-cd /Users/ivan/PhpStormProjects/game-hud && \
-  node -e "console.log(JSON.parse(require('node:fs').readFileSync('src/i18n/locales/en.json','utf8')).history)"
-```
-
-Если ключа `empty` нет — добавить во все 10 языков тем же приёмом, что в Task 12
-шаг 3, взяв формулировку из `M/i18n/locales/<lang>.json` (`history.empty`).
-Английский текст должен содержать «No operations» — по нему ищет тест.
-
-- [ ] **Step 4: Перенести экран**
+- [ ] **Step 3: Перенести экран**
 
 Взять `F/components/profile/HistoryScreen.tsx`. Применить T1–T5, T7. Правило T6
 **не применяется** — здесь курсорная пагинация со своим состоянием.
@@ -2544,16 +2532,16 @@ cd /Users/ivan/PhpStormProjects/game-hud && \
 
 В `ProfileShell.tsx` заменить заглушку на `{screen === 'history' && <HistoryScreen />}`.
 
-- [ ] **Step 5: Прогнать тесты**
+- [ ] **Step 4: Прогнать тесты**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run src/profile/HistoryScreen.test.tsx`
 Expected: 6 passed.
 
-- [ ] **Step 6: Коммит**
+- [ ] **Step 5: Коммит**
 
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud
-git add src/profile/ src/i18n/locales/
+git add src/profile/
 git commit -m "feat(profile): история транзакций с курсорной пагинацией"
 ```
 
@@ -2597,7 +2585,8 @@ describe('ReferralsScreen', () => {
     Object.assign(navigator, { clipboard: { writeText } });
     renderWithHud(<ReferralsScreen />);
     await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
+    // Кнопка подписана ключом common.copy — «Copy», а не referrals.copy.
+    await userEvent.click(screen.getByRole('button', { name: /^copy$/i }));
     expect(writeText).toHaveBeenCalledWith('https://t.me/test_bot?start=ABC123');
   });
 
@@ -2916,8 +2905,9 @@ describe('NotificationsScreen', () => {
   it('ссылается на бота из конфига, а не на захардкоженного', async () => {
     renderWithHud(<NotificationsScreen />, { config: { botUsername: 'my_bot' } });
     await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(11));
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', expect.stringContaining('my_bot'));
+    // В fatman это кнопка с текстом «@bot», открывающая t.me через Telegram
+    // SDK, а не ссылка с href — поэтому ищем по тексту, а не по role="link".
+    expect(screen.getByText('@my_bot')).toBeInTheDocument();
   });
 
   it('показывает ошибку загрузки', async () => {
