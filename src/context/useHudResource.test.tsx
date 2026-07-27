@@ -52,6 +52,24 @@ describe('useHudResource', () => {
     expect(result.current.data).toBeNull();
   });
 
+  it('переживает синхронный бросок в фетчере, а не роняет дерево', async () => {
+    // Адаптер вправе проверить предусловие до сети и бросить синхронно —
+    // именно так делает адаптер fatman, когда токена ещё нет. Раньше такое
+    // исключение улетало мимо .catch() и размонтировало всё приложение.
+    const adapter = makeFakeAdapter({
+      getMe: (() => {
+        throw new Error('not_authenticated');
+      }) as never,
+    });
+    const { result } = renderHook(() => useHudResource('me', (a) => a.getMe()), {
+      wrapper: wrapper(adapter),
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe('not_authenticated');
+    expect(result.current.data).toBeNull();
+  });
+
   it('reload перезапрашивает', async () => {
     const adapter = makeFakeAdapter();
     const { result } = renderHook(() => useHudResource('me', (a) => a.getMe()), {

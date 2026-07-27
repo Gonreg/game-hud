@@ -34,8 +34,12 @@ export function useHudResource<T>(
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetcherRef
-      .current(adapter)
+    // Promise.resolve().then(...) вместо прямого вызова: адаптер вправе бросить
+    // синхронно, проверяя предусловие до похода в сеть (например «нет токена»).
+    // При прямом вызове такое исключение улетает из эффекта мимо .catch(),
+    // и React размонтирует всё дерево — игра уходит в чёрный экран.
+    Promise.resolve()
+      .then(() => fetcherRef.current(adapter))
       .then((d) => {
         if (cancelled) return;
         setData(d);
