@@ -1963,6 +1963,18 @@ describe('словари библиотеки', () => {
     }
   });
 
+  it('не тащит ключей, которых нет в английском', () => {
+    // Односторонней проверки выше недостаточно: fatman для восьми языков хранит
+    // ключи старой, немигрированной схемы уведомлений (notifications.deposits,
+    // .withdrawals, .referrals, .big_wins), которых в en и ru уже нет. Без этого
+    // теста они молча уехали бы в npm-пакет как мёртвый груз.
+    const base = new Set(flatKeys(hudLocales.en));
+    for (const [lang, dict] of Object.entries(hudLocales)) {
+      const extra = flatKeys(dict).filter((k) => !base.has(k));
+      expect(extra, `лишние ключи в ${lang}`).toEqual([]);
+    }
+  });
+
   it('ключ profile.title на месте — по нему провайдер проверяет подмешивание', () => {
     expect(hudLocales.en.profile).toHaveProperty('title');
   });
@@ -1972,7 +1984,7 @@ describe('словари библиотеки', () => {
 - [ ] **Step 4: Прогнать тест**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run src/i18n/`
-Expected: 4 passed.
+Expected: 5 passed.
 
 Если третий тест падает — в исходных словарях fatman есть дырки. Для каждого
 недостающего ключа взять формулировку из `M/i18n/locales/<lang>.json`; если и там
