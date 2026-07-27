@@ -2223,7 +2223,8 @@ describe('ProfileHub', () => {
   it('пункт меню уводит на нужный экран', async () => {
     renderWithHud(<ProfileHub />);
     await waitFor(() => expect(screen.getByText('Test')).toBeInTheDocument());
-    await userEvent.click(screen.getByText(/statistic/i));
+    // В словаре ключ profile.menu_stats — это «Stats», а не «Statistics».
+    await userEvent.click(screen.getByText(/stats/i));
     expect(useHudStore.getState().screen).toBe('stats');
   });
 
