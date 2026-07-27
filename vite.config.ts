@@ -6,7 +6,17 @@ import dts from 'vite-plugin-dts';
 import path from 'node:path';
 
 export default defineConfig({
-  plugins: [react(), dts({ include: ['src'], rollupTypes: false })],
+  plugins: [
+    react(),
+    // Без exclude плагин обходит весь src/ по глобу и генерирует .d.ts для
+    // тестов и тестовых хелперов. Исполняемого .js для них в бандле нет, зато
+    // IDE игры предложит автоимпорт из dist/test/fakeAdapter, который упадёт.
+    dts({
+      include: ['src'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      rollupTypes: false,
+    }),
+  ],
   build: {
     lib: {
       entry: {

@@ -102,6 +102,11 @@ export const FAKE_PREFS: NotificationPrefs = {
   comeback_7d: false,
 };
 
+/** Сколько переключателей в FAKE_PREFS включено — тест уведомлений сверяется с
+ *  этим числом, а не с захардкоженной четвёркой: изменится фикстура — число
+ *  пересчитается само, вместо того чтобы тест начал молча врать. */
+export const FAKE_PREFS_ENABLED_COUNT = Object.values(FAKE_PREFS).filter(Boolean).length;
+
 export const FAKE_DEPOSIT: Deposit = {
   address: 'EQTestAddress',
   comment: 'u1',
@@ -136,7 +141,13 @@ export function makeFakeAdapter(over: Partial<HudAdapter> = {}): HudAdapter {
   };
 }
 
-/** Адаптер, у которого всё падает — для проверки экранов ошибок. */
+/**
+ * Ломает восемь читающих методов — для проверки экрана загрузки и ошибки.
+ * Пишущие (`postWithdraw`, `postSupport`, `putNotificationPrefs`) остаются
+ * рабочими: у каждого экрана своя обработка ошибки записи со своим текстом,
+ * общего выключателя для них быть не может. Чтобы проверить ошибку записи,
+ * переопредели конкретный метод: `makeFakeAdapter({ postWithdraw: ... })`.
+ */
 export function makeFailingAdapter(message = 'boom'): HudAdapter {
   const fail = vi.fn(async () => {
     throw new Error(message);
