@@ -18,7 +18,12 @@ describe('fmtAmount', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(fmtAmount(Number.NaN)).toBe('0.00');
     expect(fmtAmount(Number.POSITIVE_INFINITY)).toBe('0.00');
+    expect(warn).toHaveBeenCalledTimes(2);
     warn.mockRestore();
+  });
+
+  it('не показывает минус нуль на почти нулевых суммах', () => {
+    expect(fmtAmount(-0.001)).toBe('0.00');
   });
 
   it('печатает отрицательные суммы со знаком', () => {

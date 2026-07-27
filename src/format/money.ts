@@ -20,5 +20,8 @@ export function fmtAmount(value: number | null | undefined): string {
   if (import.meta.env.DEV && typeof value === 'number' && !finite) {
     console.warn(`[game-hud] fmtAmount получил ${String(value)} — проверь арифметику адаптера`);
   }
-  return (finite ? value : 0).toFixed(2);
+  const text = (finite ? value : 0).toFixed(2);
+  // toFixed сохраняет знак у почти нулевых отрицательных: -0.001 → '-0.00'.
+  // В балансе это читается как поломка, поэтому у нулевого результата знак снимаем.
+  return text === '-0.00' ? '0.00' : text;
 }

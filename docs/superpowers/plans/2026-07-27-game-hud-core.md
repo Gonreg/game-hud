@@ -297,7 +297,12 @@ describe('fmtAmount', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(fmtAmount(Number.NaN)).toBe('0.00');
     expect(fmtAmount(Number.POSITIVE_INFINITY)).toBe('0.00');
+    expect(warn).toHaveBeenCalledTimes(2);
     warn.mockRestore();
+  });
+
+  it('не показывает минус нуль на почти нулевых суммах', () => {
+    expect(fmtAmount(-0.001)).toBe('0.00');
   });
 
   it('печатает отрицательные суммы со знаком', () => {
@@ -356,7 +361,10 @@ export function fmtAmount(value: number | null | undefined): string {
   if (import.meta.env.DEV && typeof value === 'number' && !finite) {
     console.warn(`[game-hud] fmtAmount получил ${String(value)} — проверь арифметику адаптера`);
   }
-  return (finite ? value : 0).toFixed(2);
+  const text = (finite ? value : 0).toFixed(2);
+  // toFixed сохраняет знак у почти нулевых отрицательных: -0.001 → '-0.00'.
+  // В балансе это читается как поломка, поэтому у нулевого результата знак снимаем.
+  return text === '-0.00' ? '0.00' : text;
 }
 ```
 
@@ -374,7 +382,7 @@ Run:
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run && npm run typecheck
 ```
-Expected: 6 passed, типы без ошибок.
+Expected: 7 passed, типы без ошибок.
 
 - [ ] **Step 8: Коммит**
 
