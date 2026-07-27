@@ -2328,18 +2328,26 @@ describe('WalletScreen', () => {
     await waitFor(() => expect(adapter.postWithdraw).toHaveBeenCalledWith(5, 'EQUserWallet'));
   });
 
-  it('не даёт вывести больше баланса', async () => {
+  // Клиент проверяет только то, что проверяют обе исходные реализации: сумма
+  // должна быть положительным числом. Лимита по балансу здесь СОЗНАТЕЛЬНО нет —
+  // сколько реально можно вывести, знает сервер (бонусный баланс не выводится,
+  // возможны комиссии), и клиентский лимит рисковал бы заблокировать законный
+  // вывод. Пусть отказывает сервер.
+  it('не отправляет вывод при неположительной сумме', async () => {
     const adapter = makeFakeAdapter();
     renderWithHud(<WalletScreen />, { adapter });
     const input = await screen.findByPlaceholderText(/amount/i);
-    await userEvent.type(input, '999');
+    await userEvent.type(input, '0');
     await userEvent.click(screen.getByRole('button', { name: /withdraw/i }));
     expect(adapter.postWithdraw).not.toHaveBeenCalled();
   });
 
   it('прячет список выводов, если адаптер его не умеет', async () => {
     const { container } = renderWithHud(<WalletScreen />, { adapter: makeFakeAdapter() });
-    await waitFor(() => expect(screen.getByText(/EQTestAddress/)).toBeInTheDocument());
+    // Ждём отрисовки формы вывода — иначе отсутствие блока ничего не доказывает.
+    // Адрес депозита для этого не годится: ни fatman, ни matreshka его не
+    // показывают, он уходит прямо в TonConnect.
+    await screen.findByPlaceholderText(/amount/i);
     expect(container.querySelector('.hud-wallet-withdrawals')).not.toBeInTheDocument();
   });
 
@@ -2392,7 +2400,11 @@ Expected: тесты словарей зелёные — значит ключи
 
 Взять `F/components/profile/WalletScreen.tsx`. Применить T1–T7, плюс:
 
-- `api.getDeposit(token)` → `adapter.getDeposit()`
+- `api.getDeposit(token)` → `adapter.getDeposit()`, **по клику, а не заранее**: обе
+  исходные реализации запрашивают адрес депозита в момент нажатия и сразу отдают его
+  в `tonConnectUI.sendTransaction`. Адрес на экране не показывается никогда — не
+  добавляй такой блок, это разошлось бы с продом. Префетч тоже не делай: он поменял бы
+  момент появления ошибки, если `getDeposit` недоступен
 - `api.postWalletLink(token, address)` → блок рендерить только при
   `typeof adapter.postWalletLink === 'function'`, вызывать `adapter.postWalletLink(address)`
 - `api.postWithdraw(token, ton)` → `adapter.postWithdraw(ton, address || null)`,
