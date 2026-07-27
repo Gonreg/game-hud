@@ -1,0 +1,1260 @@
+/* ==========================================================================
+   @gonreg/game-hud — единая тема JUBB (канон визуала: fatman)
+   Все селекторы библиотеки префиксуются `hud-`, чтобы во время постепенной
+   миграции не сталкиваться с игровыми классами в шести Telegram Mini App
+   играх. Никаких точек расширения и перекраски под игру — визуал жёстко
+   единый.
+
+   Шрифты НЕ импортируются здесь — только объявлены переменные. <link> на
+   Google Fonts остаётся в index-файле игры, иначе будет двойная загрузка там,
+   где шрифт уже подключён.
+   ========================================================================== */
+
+/* ------------------------------------------------------------------------
+   Часть 1. Токены JUBB (fatman/frontend/src/styles/global_css, строки 7-28)
+   ------------------------------------------------------------------------ */
+:root {
+  --hud-bg-0: #0b0d18;
+  --hud-bg-1: #161a2e;
+  --hud-ink: #f4f1ea;
+  --hud-ink-soft: rgba(244, 241, 234, 0.62);
+  --hud-ink-dim: rgba(244, 241, 234, 0.38);
+  --hud-gold: #ffd35a;
+  --hud-coral: #ff7a59;
+  --hud-magenta: #ff3d7f;
+  --hud-teal: #2dd4bf;
+  --hud-lime: #c8ff5a;
+  --hud-danger: #ff3a47;
+  --hud-win: #5ee79b;
+  --hud-panel: rgba(11, 13, 24, 0.7);
+  --hud-panel-stroke: rgba(244, 241, 234, 0.08);
+  --hud-display: "Bricolage Grotesque", "Space Grotesk", system-ui, sans-serif;
+  --hud-sans: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --hud-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Small uppercase caption/eyebrow labels. Space Grotesk reads tighter and
+     cleaner than the monospace at small sizes (no "spread out" look). */
+  --hud-label: "Space Grotesk", system-ui, -apple-system, sans-serif;
+}
+
+/* Safe-area fallbacks. useTelegramSafeArea writes the real values onto the
+   document root at runtime; these are just the pre-mount defaults. */
+:root {
+  --hud-safe-top: 0px;
+  --hud-safe-right: 0px;
+  --hud-safe-bottom: 0px;
+  --hud-safe-left: 0px;
+}
+
+/* ------------------------------------------------------------------------
+   Часть 2. Кабинет целиком (fatman/frontend/src/styles/profile_css)
+   ------------------------------------------------------------------------ */
+
+.hud-profile-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  color: var(--hud-ink);
+  font-family: var(--hud-sans);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: hud-profile-up 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  background:
+    /* one faint accent glow in a corner — just enough to break the flat */
+    radial-gradient(60% 40% at 100% 0%, rgba(255, 122, 89, 0.06), transparent 60%),
+    radial-gradient(70% 50% at 0% 100%, rgba(45, 212, 191, 0.04), transparent 60%),
+    var(--hud-bg-0);
+}
+@keyframes hud-profile-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* header */
+.hud-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding:
+    calc(18px + var(--hud-safe-top))
+    calc(20px + var(--hud-safe-right))
+    8px
+    calc(20px + var(--hud-safe-left));
+  min-height: 56px;
+}
+.hud-profile-header__back {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--hud-ink-soft);
+  padding: 8px;
+  margin: -8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.hud-profile-header__back:hover { color: var(--hud-ink); }
+.hud-profile-header__back:active { transform: scale(0.94); }
+
+.hud-profile-header__title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hud-ink);
+}
+.hud-profile-header__spacer { width: 22px; height: 22px; }
+
+.hud-profile-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(40px + var(--hud-safe-bottom));
+  padding-left: var(--hud-safe-left);
+  padding-right: var(--hud-safe-right);
+  scroll-behavior: smooth;
+}
+.hud-profile-screen {
+  animation: hud-profile-fade 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes hud-profile-fade {
+  from { transform: translateY(6px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* hub head */
+.hud-profile-hub__head {
+  padding: 24px 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hud-profile-hub__avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(150deg, #2a2f4a, #1a1e36);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--hud-ink-soft);
+  position: relative;
+  flex-shrink: 0;
+}
+.hud-profile-hub__avatar::after {
+  /* subtle inner highlight, no neon */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+.hud-profile-hub__name {
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.hud-profile-hub__sub {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  color: var(--hud-ink-dim);
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+}
+
+/* quick actions row: two primary buttons (deposit / withdraw) */
+.hud-profile-hub__quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 24px;
+}
+
+/* accent list row (например, рефералы: подсвечена, с подсказкой) */
+.hud-profile-list__row--accent {
+  background: linear-gradient(90deg, rgba(0, 168, 232, 0.10), rgba(0, 168, 232, 0.04));
+  border-radius: 12px;
+}
+.hud-profile-list__row--accent .hud-profile-list__hint {
+  color: #00a8e8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* balances row: borderless, three columns of same-color numbers */
+.hud-profile-hub__balances {
+  margin: 0 24px 28px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: left;
+}
+.hud-profile-hub__balances > div {
+  padding: 0 4px;
+}
+.hud-profile-hub__balances > div + div {
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  padding-left: 18px;
+}
+.hud-profile-hub__bal-label {
+  font: 600 10px/1 var(--hud-label);
+  color: var(--hud-ink-dim);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.hud-profile-hub__bal-clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.hud-profile-hub__bal-clickable:hover { background: rgba(255, 255, 255, 0.03); }
+.hud-profile-hub__bal-clickable:active { background: rgba(255, 255, 255, 0.06); }
+.hud-profile-hub__bal-value {
+  margin-top: 8px;
+  font-family: var(--hud-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--hud-ink);
+}
+/* keep colors muted; reserve --hud-coral as sole accent (used in CTA + chip) */
+.hud-profile-hub__bal-main { color: var(--hud-ink); }
+.hud-profile-hub__bal-ref  { color: var(--hud-ink); }
+
+/* unified list (single container, hairline rows) */
+.hud-profile-list {
+  margin: 0 24px;
+  display: flex;
+  flex-direction: column;
+}
+.hud-profile-list__row {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--hud-ink);
+  font: 500 15px/1 var(--hud-sans);
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  text-align: left;
+  letter-spacing: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: color 0.15s, background-color 0.15s;
+}
+.hud-profile-list__row:last-child { border-bottom: 0; }
+.hud-profile-list__row:hover { color: var(--hud-ink); }
+.hud-profile-list__row:active { background: rgba(255, 255, 255, 0.02); }
+.hud-profile-list__row--me {
+  background: linear-gradient(90deg, rgba(255, 211, 90, 0.18), rgba(255, 211, 90, 0.04));
+  margin-inline: -24px;
+  padding-inline: 24px;
+  border-bottom-color: rgba(255, 211, 90, 0.20);
+}
+/* Inside the main list, extend the highlight to the screen edges (cancel
+   both .hud-profile-list margin 24px and .hud-profile-section padding 24px).
+   With box-sizing: border-box, `width: 100%` would keep the box at parent
+   width and only shift left, so we widen it by 96px to bleed both sides. */
+.hud-profile-list > .hud-profile-list__row--me {
+  width: calc(100% + 96px);
+  margin-inline: -48px;
+  padding-inline: 48px;
+}
+.hud-profile-list__row--me-referred {
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.22), rgba(45, 212, 191, 0.04));
+  border-bottom-color: rgba(45, 212, 191, 0.22);
+}
+.hud-profile-list__row--friend {
+  background: rgba(45, 212, 191, 0.10);
+  margin-inline: -24px;
+  padding-inline: 24px;
+}
+.hud-profile-list__icon {
+  color: var(--hud-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+}
+.hud-profile-list__label { flex: 1; }
+.hud-profile-list__hint {
+  color: var(--hud-ink-dim);
+  font: 500 12px/1 var(--hud-mono);
+  letter-spacing: 0.04em;
+}
+.hud-profile-list__chev {
+  color: var(--hud-ink-dim);
+  display: inline-flex;
+}
+
+/* section + card (for sub-screens) */
+.hud-profile-section {
+  padding: 8px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.hud-profile-card {
+  padding: 16px 16px 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+.hud-profile-card__row {
+  display: flex;
+  gap: 10px;
+}
+.hud-profile-select {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.hud-profile-select__label {
+  font: 600 10px/1 var(--hud-label);
+  color: var(--hud-ink-dim);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.hud-profile-select select {
+  appearance: none;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--hud-ink);
+  font-family: var(--hud-sans);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 28px 10px 12px;
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%239aa3c4' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.hud-profile-select select:focus { border-color: var(--hud-coral); }
+.hud-profile-card__label {
+  font: 700 12px/1.2 var(--hud-label);
+  color: var(--hud-ink-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hud-profile-card__value {
+  margin-top: 10px;
+  font-family: var(--hud-mono);
+  font-size: 13px;
+  color: var(--hud-ink-soft);
+  word-break: break-all;
+  line-height: 1.55;
+}
+
+/* inputs */
+.hud-profile-section input,
+.hud-profile-card input {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 0;
+  color: var(--hud-ink);
+  font-family: var(--hud-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.hud-profile-section input::placeholder,
+.hud-profile-card input::placeholder {
+  color: var(--hud-ink-dim);
+  font-weight: 500;
+}
+.hud-profile-section input:focus,
+.hud-profile-card input:focus {
+  border-bottom-color: var(--hud-coral);
+}
+
+/* buttons */
+.hud-profile-btn {
+  appearance: none;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--hud-ink);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-family: var(--hud-sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: transform 0.08s ease-out, background 0.15s, border-color 0.15s;
+}
+.hud-profile-btn:hover { border-color: rgba(255, 255, 255, 0.2); }
+.hud-profile-btn:active { transform: scale(0.985); }
+.hud-profile-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.hud-profile-btn--primary {
+  border: 0;
+  background: var(--hud-coral);
+  color: #fff;
+}
+.hud-profile-btn--primary:hover { filter: brightness(1.05); }
+.hud-profile-btn--danger {
+  border: 1px solid rgba(255, 122, 89, 0.4);
+  color: var(--hud-coral);
+  background: transparent;
+}
+
+/* toggles */
+.hud-profile-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+}
+.hud-profile-toggle:last-child { border-bottom: 0; }
+.hud-profile-toggle__switch {
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: background 200ms;
+  flex-shrink: 0;
+}
+.hud-profile-toggle__switch.hud-on { background: var(--hud-coral); }
+.hud-profile-toggle__switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hud-profile-toggle__switch.hud-on::after { left: 18px; }
+
+/* empty state */
+.hud-profile-empty {
+  padding: 80px 32px;
+  text-align: center;
+  color: var(--hud-ink-dim);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* trigger chip in game header. fatman's --top-stack (max(safe-top, 78px) —
+   a 78px floor so non-fullscreen TG clients without content-safe-area
+   insets still clear the TG header/back-button strip) is inlined directly
+   below; it isn't part of the JUBB token set. */
+.hud-profile-avatar-chip {
+  position: absolute;
+  top: calc(max(var(--hud-safe-top), 78px) + 16px);
+  right: calc(16px + var(--hud-safe-right));
+  z-index: 13;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(150deg, #2a2f4a, #1a1e36);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--hud-ink);
+  padding: 0;
+  transition: transform 0.08s, border-color 0.15s;
+}
+.hud-profile-avatar-chip:active { transform: scale(0.94); }
+.hud-profile-avatar-chip:hover { border-color: rgba(255, 255, 255, 0.85); }
+
+.hud-profile-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: #9aa3c4;
+  font-size: 12px;
+  cursor: pointer;
+}
+.hud-profile-chip--active {
+  background: rgba(255, 211, 90, 0.16);
+  color: #ffd35a;
+  border-color: #ffd35a;
+}
+
+/* Legal footer — appears at the bottom of every profile sub-screen.
+   Quiet, compact, links separated by dots. */
+.hud-legal-footer {
+  margin-top: auto;
+  padding: 18px 4px calc(12px + var(--hud-safe-bottom, 0px));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(154, 163, 196, 0.6);
+}
+.hud-legal-footer a,
+.hud-legal-footer button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: rgba(232, 236, 255, 0.55);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.hud-legal-footer a:hover,
+.hud-legal-footer a:active,
+.hud-legal-footer button:hover,
+.hud-legal-footer button:active {
+  color: var(--hud-ink, #e8ecff);
+  border-bottom-color: rgba(232, 236, 255, 0.55);
+}
+.hud-legal-footer a + a::before,
+.hud-legal-footer button + button::before,
+.hud-legal-footer a + button::before,
+.hud-legal-footer button + a::before {
+  content: '·';
+  margin-right: 10px;
+  color: rgba(154, 163, 196, 0.35);
+  border: 0;
+}
+
+/* legal document screen */
+.hud-legal-screen {
+  padding: 8px 18px calc(32px + var(--hud-safe-bottom, 0px));
+  overflow-x: hidden;
+}
+.hud-legal-screen__doc {
+  color: var(--hud-ink, #e8ecff);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 100%;
+  /* break-word (not anywhere): only breaks tokens that truly don't fit, so
+     normal words like "Platform" don't get sliced into "Pla tfor m". */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+/* The injected document's own stylesheet is dropped during <main> extraction,
+   so defensively keep every block inside the viewport — no horizontal bleed. */
+.hud-legal-screen__doc * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.hud-legal-screen__doc h1,
+.hud-legal-screen__doc h2,
+.hud-legal-screen__doc h3,
+.hud-legal-screen__doc h4 {
+  color: var(--hud-ink, #e8ecff);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.hud-legal-screen__doc h1 { font-size: 20px; margin: 4px 0 14px; }
+.hud-legal-screen__doc h2 { font-size: 17px; margin: 24px 0 10px; }
+.hud-legal-screen__doc h3 { font-size: 15px; margin: 18px 0 8px; }
+.hud-legal-screen__doc p { margin: 10px 0; }
+.hud-legal-screen__doc ul,
+.hud-legal-screen__doc ol { padding-left: 20px; margin: 8px 0; }
+.hud-legal-screen__doc li { margin: 4px 0; }
+.hud-legal-screen__doc strong { color: #fff; }
+.hud-legal-screen__doc a {
+  color: var(--hud-coral, #ffd35a);
+  word-break: break-word;
+}
+.hud-legal-screen__doc code,
+.hud-legal-screen__doc kbd {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hud-coral, #ffd35a);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.92em;
+  font-family: var(--hud-mono, "SF Mono", Menlo, monospace);
+}
+.hud-legal-screen__doc blockquote {
+  border-left: 3px solid var(--hud-coral, #ffd35a);
+  margin: 14px 0;
+  padding: 6px 12px;
+  background: rgba(255, 211, 90, 0.06);
+  color: var(--hud-ink-soft, #c8cce0);
+  border-radius: 0 8px 8px 0;
+}
+.hud-legal-screen__doc blockquote p { margin: 6px 0; }
+.hud-legal-screen__doc hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 22px 0;
+}
+.hud-legal-screen__doc table {
+  width: 100%;
+  /* Real fixed-layout table: predictable columns that fit the screen and wrap
+     by whole words, instead of display:block which collapsed the term column. */
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.hud-legal-screen__doc th,
+.hud-legal-screen__doc td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+}
+/* Definitions-style tables: give the term column a usable, readable width. */
+.hud-legal-screen__doc th:first-child,
+.hud-legal-screen__doc td:first-child {
+  width: 36%;
+}
+.hud-legal-screen__doc th {
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 600;
+}
+.hud-legal-screen__doc tr:last-child td { border-bottom: 0; }
+
+/* notifications footer: clickable bot handle */
+.hud-notif-bot-link {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--hud-coral);
+  cursor: pointer;
+}
+.hud-notif-bot-link:hover { text-decoration: underline; }
+.hud-notif-bot-link:active { opacity: 0.8; }
+
+/* ------------------------------------------------------------------------
+   Часть 3. Правила HUD из global_css (fatman) — только компоненты,
+   переезжающие в библиотеку (balance-chip, sound-settings gear, wallet
+   bottom-sheet, TON info, bet-settings bottom-sheet shell).
+   ------------------------------------------------------------------------ */
+
+/* Balance chip — anchored to the LEFT edge BELOW the TG back-button strip so
+   it can't be covered. The brand logo sits centered at the back-button level. */
+.hud-balance-chip {
+  position: absolute;
+  top: calc(max(var(--hud-safe-top), 78px) + 16px);
+  left: calc(16px + var(--hud-safe-left));
+  z-index: 11;
+  appearance: none;
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px 6px 12px;
+  border-radius: 999px;
+  background: var(--hud-panel);
+  border: 1px solid var(--hud-panel-stroke);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--hud-mono); font-size: 12px;
+  font-weight: 700;
+  color: var(--hud-ink);
+  cursor: pointer;
+  transition: transform 0.08s, border-color 0.15s;
+}
+.hud-balance-chip:active { transform: scale(0.96); }
+.hud-balance-chip:hover { border-color: rgba(255, 255, 255, 0.22); }
+
+/* Sound settings: gear (left of the avatar) + downward glass dropdown (Bonk standard). */
+.hud-fm-setwrap { position: absolute; top: calc(max(var(--hud-safe-top), 78px) + 16px); right: calc(16px + var(--hud-safe-right) + 42px); z-index: 13; }
+.hud-fm-gear { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.6); background: linear-gradient(150deg, #2a2f4a, #1a1e36); color: rgba(255, 255, 255, 0.9); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); padding: 0; transition: transform 0.08s, border-color 0.15s; }
+.hud-fm-gear svg { width: 18px; height: 18px; }
+.hud-fm-gear:active { transform: scale(0.94); }
+.hud-fm-setmenu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 172px; background: rgba(11, 16, 26, 0.94); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 5px; display: flex; flex-direction: column; gap: 2px; z-index: 30; box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5); }
+.hud-fm-smitem { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 11px; background: none; border: none; border-radius: 10px; color: rgba(255, 255, 255, 0.9); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; }
+.hud-fm-smitem:active { background: rgba(255, 255, 255, 0.08); }
+.hud-fm-smi { width: 20px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.85); }
+.hud-fm-smi svg { width: 16px; height: 16px; display: block; }
+.hud-fm-sml { flex: 1; }
+.hud-fm-sms { font-size: 11px; font-weight: 700; color: #7cf0b0; }
+.hud-fm-sms.hud-off { color: rgba(255, 255, 255, 0.4); }
+.hud-fm-smtracks { display: flex; gap: 4px; padding: 2px 8px 6px; }
+.hud-fm-smtracks.hud-off { opacity: 0.4; pointer-events: none; }
+.hud-fm-smtrack { flex: 1; padding: 6px 4px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9px; color: rgba(255, 255, 255, 0.6); font-family: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.hud-fm-smtrack:active { background: rgba(255, 255, 255, 0.1); }
+.hud-fm-smtrack.hud-on { color: #fff; background: rgba(160, 107, 255, 0.24); border-color: rgba(160, 107, 255, 0.6); }
+.hud-balance-chip svg { flex: 0 0 auto; display: block; }
+
+/* ─── Wallet bottom-sheet ─────────────────────────────────────────────── */
+.hud-wallet-sheet-balance {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; text-align: center;
+  padding: 18px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+}
+.hud-wallet-sheet-balance__label {
+  font-family: var(--hud-label); font-size: 11px; font-weight: 600;
+  color: var(--hud-ink-dim);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.hud-wallet-sheet-balance__value {
+  font-family: var(--hud-display); font-weight: 800; font-size: 22px;
+  color: var(--hud-ink);
+  font-variant-numeric: tabular-nums;
+}
+.hud-wallet-sheet-balance__value span {
+  font-family: var(--hud-mono); font-size: 12px; color: var(--hud-ink-soft);
+  margin-left: 4px; font-weight: 600;
+}
+.hud-wallet-sheet-link {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 44px;
+}
+.hud-wallet-sheet-link__row {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; flex-wrap: wrap;
+}
+.hud-wallet-sheet-link-btn {
+  appearance: none; border: 0;
+  height: 36px; padding: 0 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--hud-ink);
+  font-family: var(--hud-sans); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.08s;
+}
+.hud-wallet-sheet-link-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.hud-wallet-sheet-link-btn:active { transform: scale(0.96); }
+.hud-wallet-sheet-link-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hud-wallet-sheet-linked {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: rgba(94, 231, 155, 0.08);
+  border: 1px solid rgba(94, 231, 155, 0.22);
+  border-radius: 12px;
+  width: 100%;
+  font-size: 12px; color: var(--hud-ink);
+}
+.hud-wallet-sheet-linked__dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--hud-win); box-shadow: 0 0 8px var(--hud-win);
+  flex: 0 0 auto;
+}
+.hud-wallet-sheet-linked__label {
+  color: var(--hud-ink-soft);
+  font-family: var(--hud-label); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.hud-wallet-sheet-linked__addr {
+  margin-left: auto;
+  font-family: var(--hud-mono); font-size: 12px; font-weight: 700;
+  color: var(--hud-ink);
+}
+.hud-wallet-sheet-tabs {
+  display: flex; gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+}
+.hud-wallet-sheet-tab {
+  appearance: none; border: 0; background: transparent;
+  flex: 1;
+  height: 36px;
+  border-radius: 9px;
+  font-family: var(--hud-sans); font-size: 13px; font-weight: 700;
+  color: var(--hud-ink-soft);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.hud-wallet-sheet-tab:hover { color: var(--hud-ink); }
+.hud-wallet-sheet-tab.hud-is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--hud-ink);
+}
+.hud-wallet-sheet-form {
+  display: grid; gap: 10px;
+}
+.hud-wallet-sheet-input {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+}
+.hud-wallet-sheet-input input {
+  flex: 1; min-width: 0;
+  appearance: none; background: transparent; border: 0; outline: none;
+  color: var(--hud-ink);
+  font-family: var(--hud-display); font-weight: 700; font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.hud-wallet-sheet-input input::-webkit-outer-spin-button,
+.hud-wallet-sheet-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.hud-wallet-sheet-input span {
+  color: var(--hud-ink-soft); font-family: var(--hud-mono); font-size: 13px; font-weight: 600;
+}
+.hud-wallet-sheet-withdraw-cta {
+  background: linear-gradient(135deg, #5ee79b 0%, #2dd4bf 100%) !important;
+  color: #04221c !important;
+}
+.hud-wallet-sheet-withdraw-cta:disabled {
+  filter: grayscale(0.6) brightness(0.7);
+  cursor: not-allowed;
+}
+.hud-wallet-sheet-hint {
+  margin: 0;
+  font-family: var(--hud-mono); font-size: 11px; line-height: 1.5;
+  color: var(--hud-ink-dim);
+}
+.hud-wallet-sheet-msg {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  font-family: var(--hud-mono); font-size: 11px; color: var(--hud-ink-soft);
+  line-height: 1.5;
+}
+
+/* TON info sheet content */
+.hud-ton-info-title {
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.hud-ton-info-body {
+  display: grid; gap: 10px;
+  padding: 4px 2px 2px;
+}
+.hud-ton-info-body p {
+  margin: 0;
+  font-size: 14px; line-height: 1.45;
+  color: var(--hud-ink);
+}
+.hud-ton-info-body p:first-child { color: var(--hud-ink-soft); }
+.hud-ton-info-cta {
+  appearance: none; border: 0;
+  width: 100%; height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0098EA 0%, #006eaa 100%);
+  color: #fff;
+  font-family: var(--hud-display); font-weight: 800; font-size: 15px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+.hud-ton-info-cta:active { transform: scale(0.98); }
+
+/* Bet settings bottom-sheet (gear icon). NB: despite the name, SoundSettings
+   also reuses this markup as a generic bottom-sheet shell — not only for
+   actual bet settings — which is why it lives in the shared library. */
+.hud-bet-settings-overlay {
+  position: absolute; inset: 0;
+  background: rgba(8, 10, 30, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 30;
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: hud-bet-settings-overlay-in 0.18s ease-out;
+}
+@keyframes hud-bet-settings-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.hud-bet-settings-sheet {
+  width: 100%;
+  background: var(--hud-panel);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 16px 16px calc(20px + var(--hud-safe-bottom));
+  display: grid; gap: 14px;
+  animation: hud-bet-settings-sheet-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@keyframes hud-bet-settings-sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.hud-bet-settings-head {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.hud-bet-settings-title {
+  font-family: var(--hud-display); font-weight: 800; font-size: 17px;
+  color: var(--hud-ink);
+}
+.hud-bet-settings-close {
+  appearance: none; border: 0;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.08);
+  color: var(--hud-ink);
+  cursor: pointer;
+  padding: 0;
+}
+.hud-bet-settings-close:hover { background: rgba(255,255,255,0.14); }
+.hud-bet-settings-close svg { width: 16px; height: 16px; }
+.hud-bet-settings-group {
+  display: grid; gap: 8px;
+  padding: 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+}
+.hud-bet-settings-group-label {
+  font-family: var(--hud-label); font-size: 11px; font-weight: 600;
+  color: var(--hud-ink-dim);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.hud-bet-settings-row {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 32px;
+}
+.hud-bet-settings-row-main {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 0;
+  color: var(--hud-ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+.hud-bet-settings-row-main input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--hud-coral);
+  cursor: pointer;
+}
+.hud-bet-settings-row-input {
+  display: flex; align-items: baseline; gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-family: var(--hud-mono);
+}
+.hud-bet-settings-row-input input {
+  width: 56px;
+  background: transparent; border: 0; outline: none;
+  color: var(--hud-ink);
+  font-family: var(--hud-mono); font-size: 14px; font-weight: 600;
+  text-align: right;
+}
+.hud-bet-settings-row-input input:disabled { opacity: 0.4; }
+.hud-bet-settings-row-input span { color: var(--hud-ink-soft); font-size: 12px; }
+.hud-bet-settings-hint {
+  font-family: var(--hud-mono); font-size: 11px; color: var(--hud-ink-dim);
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------------
+   Часть 4. Промо-карусель кошелька (matreshka/frontend/src/profile/profile_css, строки 304-330)
+   Единственное улучшение поверх fatman.
+   ------------------------------------------------------------------------ */
+
+/* Swipeable promo carousel (wallet): one card fills the width; extra cards
+   snap horizontally. Future banners just append to the row in WalletScreen. */
+.hud-profile-promos {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: -4px 0 0;
+}
+.hud-profile-promos::-webkit-scrollbar { display: none; }
+.hud-profile-promo {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  border-radius: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(245, 181, 49, 0.18), rgba(0, 168, 232, 0.10));
+  border: 1px solid rgba(245, 181, 49, 0.35);
+}
+.hud-profile-promo__title { font-size: 16px; font-weight: 800; color: #f5d57e; }
+.hud-profile-promo__sub { margin-top: 6px; font-size: 13px; line-height: 1.45; color: var(--hud-ink-soft); }
+
+/* ------------------------------------------------------------------------
+   Часть 5. Ввод суммы ставки (BetAmountInput, Task 21) + TopBar —
+   структура и full-bleed карусель портированы из matreshka/frontend/src/game/game_css
+   (fatman использует другой виджет ставки, в библиотеку не едет).
+
+   matreshka-only custom properties (--chip/--chipHi/--line/--sub/--panelbg)
+   не являются токенами JUBB и не переносятся как есть: --ink/--gold/--sa-top
+   отображены на прямые эквиваленты JUBB (--hud-ink/--hud-gold/--hud-safe-top),
+   --line/--panelbg — на --hud-panel-stroke/--hud-panel (тот же смысл —
+   тонкая обводка / тёмная панель), --sub (приглушённый текст) — на
+   --hud-ink-dim, а --chip/--chipHi (заливки без прямого аналога в JUBB)
+   вписаны литералами: --chip как есть (уже белая rgba), --chipHi
+   перекрашен из амбера matreshka в золото JUBB при той же прозрачности.
+   ------------------------------------------------------------------------ */
+
+/* Bet row: value stepper on the left, scrollable preset carousel on the
+   right. Both align to a stable 52px height. */
+.hud-bet-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 10px;
+  height: 52px;
+}
+.hud-bet-row.hud-bet-row--dim {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: saturate(0.6);
+}
+.hud-bet-stepper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--hud-panel-stroke);
+  overflow: hidden;
+}
+.hud-bet-stepper.hud-bet-stepper--shake {
+  animation: hud-bet-stepper-shake 0.3s ease;
+}
+@keyframes hud-bet-stepper-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.hud-bet-step {
+  width: 40px;
+  border: none;
+  background: none;
+  color: var(--hud-ink);
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.hud-bet-step:active {
+  background: rgba(255, 211, 90, 0.13);
+  transform: scale(0.9);
+}
+.hud-bet-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 4px;
+  min-width: 82px;
+}
+.hud-bet-value__label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hud-ink-dim);
+  font-weight: 600;
+  line-height: 1;
+}
+.hud-bet-value__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--hud-ink);
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+/* Full-bleed carousel: negative right margin cancels the panel's own right
+   padding so the last preset chip isn't clipped (ported from matreshka's
+   "full-bleed chip carousel" fix). */
+.hud-bet-presets {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin-right: -16px;
+  padding-right: 16px;
+}
+.hud-bet-presets::-webkit-scrollbar { display: none; }
+.hud-bet-chip {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding: 0 12px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--hud-panel-stroke);
+  color: var(--hud-ink);
+  font-family: var(--hud-display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.hud-bet-chip:active {
+  transform: scale(0.9);
+  background: rgba(255, 211, 90, 0.13);
+}
+.hud-bet-chip.hud-bet-chip--on {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: rgba(255, 211, 90, 0.13);
+}
+
+/* TopBar (layout only) */
+.hud-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(16px + var(--hud-safe-top)) 16px 8px;
+  position: relative;
+  z-index: 20;
+}
+.hud-bal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--hud-panel-stroke);
+  border-radius: 999px;
+  background: var(--hud-panel);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: transform 0.08s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.hud-bal-chip:active { transform: scale(0.96); }
+.hud-bal-chip:hover { border-color: rgba(255, 255, 255, 0.22); }
+.hud-bal-num {
+  font-family: var(--hud-display);
+  font-weight: 700;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--hud-ink);
+  line-height: 1;
+}
+.hud-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hud-ava {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #37aee2, #1e96c8);
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.hud-ava svg { width: 24px; height: 24px; }
+.hud-profile-open {
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hud-profile-open:active { transform: scale(0.94); }
+.hud-setwrap { position: relative; }
+.hud-rules {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: rgba(11, 16, 26, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.9);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+.hud-rules svg { width: 22px; height: 22px; }
+.hud-rules:active { transform: scale(0.96); }
+
+/* ------------------------------------------------------------------------
+   Часть 6. Добавлено в предыдущих задачах (скелетоны, ошибка профиля,
+   значения лидерборда) — пока нигде не лежало, фиксируется здесь.
+   ------------------------------------------------------------------------ */
+
+.hud-skeleton { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; }
+.hud-skeleton__row {
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(244, 241, 234, 0.05) 25%,
+    rgba(244, 241, 234, 0.10) 37%,
+    rgba(244, 241, 234, 0.05) 63%
+  );
+  background-size: 400% 100%;
+  animation: hud-skeleton-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes hud-skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+.hud-profile-error { padding: 16px; color: var(--hud-danger); font-family: var(--hud-sans); }
+.hud-lb-value--mult { color: var(--hud-gold); }
+.hud-lb-value--turnover { color: var(--hud-ink-soft); }
+.hud-lb-value--loss { color: var(--hud-coral); }
