@@ -1046,6 +1046,10 @@ function I18nGuard() {
   const { i18n } = useTranslation();
   useEffect(() => {
     if (!import.meta.env.DEV) return;
+    // Когда инстанса i18next нет вообще, react-i18next отдаёт пустой объект, и
+    // i18n.exists — undefined. Это другая проблема, не про забытые словари,
+    // и падать на ней проверка не должна.
+    if (typeof i18n.exists !== 'function') return;
     if (!i18n.exists('profile.title')) {
       console.error(
         '[game-hud] Словари библиотеки не подмешаны в i18next: ключ "profile.title" ' +
@@ -1955,12 +1959,16 @@ describe('словари библиотеки', () => {
   });
 
   it('каждый язык покрывает все ключи английского', () => {
+    // Ассерт снаружи цикла, а не внутри: иначе тест падает на первом же языке и
+    // остальные остаются непроверенными в этом прогоне. Собираем полную картину.
     const base = flatKeys(hudLocales.en);
+    const report: Record<string, string[]> = {};
     for (const [lang, dict] of Object.entries(hudLocales)) {
       const has = new Set(flatKeys(dict));
       const missing = base.filter((k) => !has.has(k));
-      expect(missing, `не переведено в ${lang}`).toEqual([]);
+      if (missing.length) report[lang] = missing;
     }
+    expect(report).toEqual({});
   });
 
   it('не тащит ключей, которых нет в английском', () => {
@@ -1991,6 +1999,14 @@ Expected: 5 passed.
 нет — скопировать английский текст и добавить строку в
 `L/src/i18n/locales/UNTRANSLATED.md` со списком языков и ключей, чтобы перевод
 не потерялся.
+
+**Почему копируем английский, а не полагаемся на `fallbackLng`.** Соблазнительно
+удалить недостающие ключи и дать i18next подставить английский самому — но фолбэк
+настраивает игра, и настроен он у всех по-разному: `'en'` у fatman и molot,
+`['en', 'ru']` у matreshka, а у **crash-race и basketball — `'ru'`**. То есть
+испаноязычный игрок в двух играх из шести увидел бы вместо английского русский
+текст. Библиотека не имеет права зависеть от того, как хост настроил фолбэк, —
+поэтому строка лежит в словаре явно.
 
 - [ ] **Step 5: Коммит**
 
