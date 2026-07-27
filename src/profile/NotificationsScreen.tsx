@@ -63,7 +63,7 @@ export function NotificationsScreen() {
     const updated = { ...prefs, [k]: !prefs[k] };
     setPrefs(updated);
     try {
-      await adapter.putNotificationPrefs({ [k]: updated[k] } as Partial<NotificationPrefs>);
+      await adapter.putNotificationPrefs(updated);
     } catch {
       setPrefs(prev);
     }

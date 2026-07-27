@@ -15,8 +15,11 @@ export interface Transaction {
   id: string;
   kind: string;
   amount: number;
-  balanceBefore: number;
-  balanceAfter: number;
+  /** Снимок баланса до и после проводки. Есть не у всех бэков: у crash-race
+   *  гроссбух хранит только сумму, поэтому поля необязательные — лучше их
+   *  отсутствие, чем ноль, который выглядит как настоящий баланс. */
+  balanceBefore?: number;
+  balanceAfter?: number;
   refId: string | null;
   createdAt: string;
 }
@@ -166,7 +169,13 @@ export interface HudAdapter {
   getReferrals(): Promise<Referrals>;
   getTransactions(cursor?: string): Promise<TransactionPage>;
   getNotificationPrefs(): Promise<NotificationPrefs>;
-  putNotificationPrefs(prefs: Partial<NotificationPrefs>): Promise<NotificationPrefs>;
+  /**
+   * Принимает объект целиком, а не патч. Бэки ведут себя по-разному: у
+   * crash-race сохранение делает полную замену (`SET prefs = EXCLUDED.prefs`),
+   * и патч из одного ключа стёр бы остальные настройки игрока. Полный объект
+   * безопасен в обоих случаях, поэтому неоднозначности в контракте нет.
+   */
+  putNotificationPrefs(prefs: NotificationPrefs): Promise<NotificationPrefs>;
   getDeposit(): Promise<Deposit>;
   postWithdraw(amount: number, address: string | null): Promise<WithdrawTicket>;
   postSupport(text: string, theme: SupportTheme, files: File[]): Promise<SupportTicket>;
