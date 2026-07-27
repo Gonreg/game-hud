@@ -30,7 +30,9 @@ export const FAKE_STATS: Stats = {
   totalWagered: 100,
   totalWon: 120,
   netProfit: 20,
-  winrate: 0.55,
+  // Проценты, а не доля: экран рисует winrate.toFixed(1) + '%', то есть бэк
+  // отдаёт значение уже в процентах. С долей 0.55 экран показал бы «0.6%».
+  winrate: 55,
   bestStreak: 4,
   avgBet: 2.4,
   biggestWin: 30,
@@ -42,12 +44,15 @@ export const FAKE_STATS: Stats = {
   weekProfit: 8,
 };
 
+// Доли, а не проценты — см. комментарий над Percentiles в adapter/types.
+// winrate намеренно не 0.55: иначе «лучше 55%» столкнулось бы в запросах по
+// тексту с самим винрейтом «55.0%» из FAKE_STATS.
 export const FAKE_PERCENTILES: Percentiles = {
-  rounds: 60,
-  bestMult: 80,
-  winrate: 55,
-  profit: 70,
-  avgBet: 40,
+  rounds: 0.6,
+  bestMult: 0.8,
+  winrate: 0.72,
+  profit: 0.7,
+  avgBet: 0.4,
 };
 
 export const FAKE_REFERRALS: Referrals = {

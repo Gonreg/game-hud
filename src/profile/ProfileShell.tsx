@@ -5,6 +5,8 @@ import { ProfileHub } from './ProfileHub';
 import { WalletScreen } from './WalletScreen';
 import { HistoryScreen } from './HistoryScreen';
 import { ReferralsScreen } from './ReferralsScreen';
+import { StatsScreen } from './StatsScreen';
+import { LeaderboardScreen } from './LeaderboardScreen';
 import { LegalFooter } from './LegalFooter';
 import { IconArrowLeft, IconClose } from '../primitives/icons';
 
@@ -74,8 +76,8 @@ export function ProfileShell() {
           {screen === 'wallet' && <WalletScreen />}
           {screen === 'history' && <HistoryScreen />}
           {screen === 'referrals' && <ReferralsScreen />}
-          {screen === 'stats' && null /* TODO: Task 15 */}
-          {screen === 'leaderboard' && null /* TODO: Task 16 */}
+          {screen === 'stats' && <StatsScreen />}
+          {screen === 'leaderboard' && <LeaderboardScreen />}
           {screen === 'notifications' && null /* TODO: Task 17 */}
           {screen === 'language' && null /* TODO: Task 18 */}
           {screen === 'help' && null /* TODO: Task 18 */}

@@ -39,6 +39,11 @@ export interface Stats {
   weekProfit: number;
 }
 
+/**
+ * Доли от нуля до единицы, а НЕ проценты: 0.8 значит «лучше 80% игроков».
+ * Так считает бэк (`lo / sorted.length`), и экран статистики домножает на 100
+ * сам. Адаптер, который отдаст сюда проценты, нарисует «лучше 8000%».
+ */
 export interface Percentiles {
   rounds: number | null;
   bestMult: number | null;
