@@ -56,7 +56,9 @@
     "deposit_sent": "Отправлено, ожидаем подтверждения on-chain",
     "withdraw_created": "Заявка #{{id}} создана, статус: {{status}}",
     "auth_loading": "Сначала загрузка авторизации…",
-    "error_prefix": "Ошибка: {{message}}"
+    "error_prefix": "Ошибка: {{message}}",
+    "promo_title": "🎁 +100% к пополнению",
+    "bonus_note": "+100% бонусом на каждое пополнение — на ставки (вывести нельзя)."
   },
   "history": {
     "title": "История",

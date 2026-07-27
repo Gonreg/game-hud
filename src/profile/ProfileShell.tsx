@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { ProfileHub } from './ProfileHub';
+import { WalletScreen } from './WalletScreen';
 import { LegalFooter } from './LegalFooter';
 import { IconArrowLeft, IconClose } from '../primitives/icons';
 
@@ -68,7 +69,7 @@ export function ProfileShell() {
       <div className="hud-profile-body">
         <div className="hud-profile-screen" key={screen}>
           {screen === 'hub' && <ProfileHub />}
-          {screen === 'wallet' && null /* TODO: Task 12 */}
+          {screen === 'wallet' && <WalletScreen />}
           {screen === 'history' && null /* TODO: Task 13 */}
           {screen === 'referrals' && null /* TODO: Task 14 */}
           {screen === 'stats' && null /* TODO: Task 15 */}

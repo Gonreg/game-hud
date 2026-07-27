@@ -1259,3 +1259,16 @@
 .hud-lb-value--mult { color: var(--hud-gold); }
 .hud-lb-value--turnover { color: var(--hud-ink-soft); }
 .hud-lb-value--loss { color: var(--hud-coral); }
+
+/* Withdrawals list (Task 12) — optional block, only rendered when the
+   adapter implements getWithdrawals. No fatman/matreshka source to port,
+   so kept minimal: reuses .hud-profile-card as the outer frame. */
+.hud-wallet-withdrawals { display: flex; flex-direction: column; gap: 10px; }
+.hud-wallet-withdrawals__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: 500 13px/1.3 var(--hud-sans);
+  color: var(--hud-ink-soft);
+}

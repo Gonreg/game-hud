@@ -56,7 +56,9 @@
     "deposit_sent": "Sent, waiting for on-chain confirmation",
     "withdraw_created": "Request #{{id}} created, status: {{status}}",
     "auth_loading": "Loading auth…",
-    "error_prefix": "Error: {{message}}"
+    "error_prefix": "Error: {{message}}",
+    "promo_title": "🎁 +100% deposit bonus",
+    "bonus_note": "+100% bonus on every top-up — for bets (non-withdrawable)."
   },
   "history": {
     "title": "History",

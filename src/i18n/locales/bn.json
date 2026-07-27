@@ -56,7 +56,9 @@
     "balance_label": "অ্যাকাউন্ট ব্যালেন্স",
     "deposit_info": "Tap “Deposit” and confirm the transaction in your wallet — done. The address and comment are filled in automatically (~30 sec). Only you control the funds in your wallet — we have no access to them, it's safe.",
     "withdraw_info": "Minimum 0.5 TON. Up to 100 TON — automatic in ~1 minute. Above 100 TON — manual review within 24 hours.",
-    "need_deposit_first": "Make a deposit from this wallet first, then you can link it"
+    "need_deposit_first": "Make a deposit from this wallet first, then you can link it",
+    "promo_title": "🎁 +100% deposit bonus",
+    "bonus_note": "+100% bonus on every top-up — for bets (non-withdrawable)."
   },
   "history": {
     "title": "ইতিহাস",
