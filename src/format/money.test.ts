@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fmtAmount } from './money';
 
 describe('fmtAmount', () => {
-  it('печатает две значащие цифры после запятой', () => {
+  it('печатает два знака после запятой', () => {
     expect(fmtAmount(1.5)).toBe('1.50');
     expect(fmtAmount(0)).toBe('0.00');
     expect(fmtAmount(1234.567)).toBe('1234.57');
@@ -20,5 +20,20 @@ describe('fmtAmount', () => {
 
   it('печатает отрицательные суммы со знаком', () => {
     expect(fmtAmount(-3.2)).toBe('-3.20');
+  });
+
+  it('ругается в dev на NaN — это всегда сломанный адаптер', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fmtAmount(Number.NaN);
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('молчит на null и undefined — так выглядит незагруженный me', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fmtAmount(null);
+    fmtAmount(undefined);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
