@@ -117,8 +117,7 @@ F/App.tsx                      замена локальных компонен�
     "build": "vite build",
     "dev": "vite --open /demo/index.html",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "react-window": "^1.8.11"
@@ -153,6 +152,13 @@ F/App.tsx                      замена локальных компонен�
   }
 }
 ```
+
+**Почему в манифесте нет `prepare`.** Скрипт нужен ровно одному потребителю — установке
+пакета из git-URL, которая впервые случается в Task 26. Но npm вызывает его и при
+локальном `npm install` внутри самого пакета, а `vite build` не проходит до Task 9:
+в `vite.config.ts` объявлена точка входа `src/i18n/index.ts`, которой ещё нет. Держать
+`npm install` сломанным двадцать задач ради скрипта, нужного в самом конце, — плохая
+сделка, поэтому `prepare` добавляется в Task 22, где сборка впервые проверяется зелёной.
 
 - [ ] **Step 2: Создать tsconfig и конфиг сборки**
 
@@ -256,11 +262,11 @@ Object.defineProperty(window, 'Telegram', {
 `L/src/format/money.test.ts`:
 
 ```ts
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fmtAmount } from './money';
 
 describe('fmtAmount', () => {
-  it('печатает две значащие цифры после запятой', () => {
+  it('печатает два знака после запятой', () => {
     expect(fmtAmount(1.5)).toBe('1.50');
     expect(fmtAmount(0)).toBe('0.00');
     expect(fmtAmount(1234.567)).toBe('1234.57');
@@ -278,6 +284,21 @@ describe('fmtAmount', () => {
 
   it('печатает отрицательные суммы со знаком', () => {
     expect(fmtAmount(-3.2)).toBe('-3.20');
+  });
+
+  it('ругается в dev на NaN — это всегда сломанный адаптер', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fmtAmount(Number.NaN);
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('молчит на null и undefined — так выглядит незагруженный me', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fmtAmount(null);
+    fmtAmount(undefined);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 ```
@@ -301,10 +322,23 @@ Expected: FAIL — `Failed to resolve import "./money"`.
  * Библиотека работает только в дробных единицах отображения: 1.5 значит
  * полторы монеты. Нормализация из нано-единиц — ответственность адаптера игры
  * (см. спеку, раздел «Единицы фиксируем жёстко»).
+ *
+ * Любой мусор на входе превращается в '0.00': показать игроку ноль лучше, чем
+ * «NaN» посреди баланса. Но `NaN` и `Infinity` — это всегда сломанная
+ * арифметика в адаптере, поэтому в dev-сборке о них сообщаем. `null` и
+ * `undefined` штатны: так выглядит ещё не загруженный `me`, и молчать о них
+ * обязательно — иначе предупреждение сыпалось бы на каждый рендер загрузки.
+ *
+ * Оговорка про границу защиты: сумма в нано-единицах, забытая недоделённой на
+ * 1e9, — валидное конечное число, и здесь её не поймать. Это ловится ручной
+ * проверкой баланса при интеграции каждой игры (спека, раздел 10).
  */
 export function fmtAmount(value: number | null | undefined): string {
-  const n = typeof value === 'number' && Number.isFinite(value) ? value : 0;
-  return n.toFixed(2);
+  const finite = typeof value === 'number' && Number.isFinite(value);
+  if (import.meta.env.DEV && typeof value === 'number' && !finite) {
+    console.warn(`[game-hud] fmtAmount получил ${String(value)} — проверь арифметику адаптера`);
+  }
+  return (finite ? value : 0).toFixed(2);
 }
 ```
 
@@ -322,7 +356,7 @@ Run:
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run && npm run typecheck
 ```
-Expected: 4 passed, типы без ошибок.
+Expected: 6 passed, типы без ошибок.
 
 - [ ] **Step 8: Коммит**
 
@@ -1430,16 +1464,76 @@ interface Window {
 Игровые методы (`requestFullscreen`, `disableVerticalSwipes`,
 `enableClosingConfirmation`) не переносить — ими управляет игра, не библиотека.
 
-- [ ] **Step 5: Прогнать тесты**
+- [ ] **Step 5: Сделать мок событий Telegram рабочим**
+
+Заглушки `onEvent: () => {}` и `offEvent: () => {}` из `vitest.setup.ts` не хранят
+колбэк, поэтому ими нельзя проверить ни срабатывание события, ни то, что отписка
+получила ту же ссылку на функцию. Это реальный класс багов — в `useEffect` легко
+передать в `offEvent` новую инлайн-функцию, и подписка потечёт. Здесь этот хук впервые
+на них опирается, поэтому меняем заглушки на минимальный эмиттер.
+
+В `vitest.setup.ts` заменить `onEvent` и `offEvent` внутри мока на:
+
+```ts
+      // Реальный мини-эмиттер, а не заглушка: тесты должны уметь дёрнуть
+      // подписанный колбэк и заметить отписку не той ссылкой.
+      onEvent: (event: string, cb: () => void) => {
+        const list = tgListeners.get(event) ?? new Set<() => void>();
+        list.add(cb);
+        tgListeners.set(event, list);
+      },
+      offEvent: (event: string, cb: () => void) => {
+        tgListeners.get(event)?.delete(cb);
+      },
+```
+
+и в начало файла, до `Object.defineProperty`, добавить:
+
+```ts
+/** Подписчики Telegram-событий: тесты эмитят через emitTelegramEvent. */
+const tgListeners = new Map<string, Set<() => void>>();
+
+/** Разослать Telegram-событие подписчикам — как это делает настоящий клиент. */
+export function emitTelegramEvent(event: string): void {
+  for (const cb of tgListeners.get(event) ?? []) cb();
+}
+
+/** Сколько живых подписчиков на событии — для проверки, что отписка сработала. */
+export function telegramListenerCount(event: string): number {
+  return tgListeners.get(event)?.size ?? 0;
+}
+```
+
+Дописать в `L/src/theme/useTelegramSafeArea.test.tsx` тест на отписку:
+
+```tsx
+  it('отписывается ровно теми же ссылками при размонтировании', () => {
+    const { unmount } = renderHook(() => useTelegramSafeArea());
+    expect(telegramListenerCount('safeAreaChanged')).toBe(1);
+    unmount();
+    expect(telegramListenerCount('safeAreaChanged')).toBe(0);
+  });
+
+  it('пересчитывает инсеты по событию от Telegram', () => {
+    renderHook(() => useTelegramSafeArea());
+    setTg({ safeAreaInset: { top: 12, right: 0, bottom: 0, left: 0 } });
+    emitTelegramEvent('safeAreaChanged');
+    expect(readVar('--hud-safe-top')).toBe('12px');
+  });
+```
+
+с импортом `import { emitTelegramEvent, telegramListenerCount } from '../../vitest.setup';`
+
+- [ ] **Step 6: Прогнать тесты**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npx vitest run src/theme/`
-Expected: 4 passed.
+Expected: 6 passed.
 
-- [ ] **Step 6: Коммит**
+- [ ] **Step 7: Коммит**
 
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud
-git add src/theme/ src/types/
+git add src/theme/ src/types/ vitest.setup.ts
 git commit -m "feat(theme): safe-area Telegram для scaled и полноэкранного режимов"
 ```
 
@@ -3622,7 +3716,22 @@ createRoot(document.getElementById('root')!).render(
 `vitest` должен остаться в `devDependencies` (он там есть) и в бандл не попадёт:
 `demo/` не входит в точки входа сборки библиотеки.
 
-- [ ] **Step 3: Прогнать всё разом**
+- [ ] **Step 3: Вернуть `prepare` в манифест**
+
+Теперь, когда обе точки входа существуют и сборка проходит, `prepare` можно включить —
+именно он собирает `dist` при установке пакета из git-URL в Task 26. В `package.json`
+в блок `scripts` добавить последней строкой:
+
+```json
+"prepare": "npm run build"
+```
+
+Проверить, что локальная установка больше не ломается:
+
+Run: `cd /Users/ivan/PhpStormProjects/game-hud && npm install`
+Expected: установка проходит, `prepare` вызывает сборку, она успешна.
+
+- [ ] **Step 4: Прогнать всё разом**
 
 Run:
 ```bash
@@ -3631,25 +3740,25 @@ cd /Users/ivan/PhpStormProjects/game-hud && npm run typecheck && npx vitest run 
 Expected: типы чисто, все тесты зелёные, в `dist/` лежат `index.js`, `i18n.js`,
 `index.d.ts` и файл стилей.
 
-- [ ] **Step 4: Сверить фактическое имя CSS с манифестом**
+- [ ] **Step 5: Сверить фактическое имя CSS с манифестом**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && ls dist/*.css`
 Expected: один css-файл. В манифесте `exports["./styles.css"]` указан `./dist/style.css` —
 если vite назвал файл иначе, поправить манифест под фактическое имя и пересобрать.
 
-- [ ] **Step 5: Посмотреть демо глазами**
+- [ ] **Step 6: Посмотреть демо глазами**
 
 Run: `cd /Users/ivan/PhpStormProjects/game-hud && npm run dev`
 Открыть выданный адрес и проверить: верхний HUD, открытие кабинета, все 12 экранов
 через меню, строка ввода ставки со степпером и пресетами. Ничего не должно быть
 без стилей.
 
-- [ ] **Step 6: Коммит**
+- [ ] **Step 7: Коммит**
 
 ```bash
 cd /Users/ivan/PhpStormProjects/game-hud
 git add src/index.ts demo/ package.json
-git commit -m "feat(pkg): публичные экспорты и демо-страница"
+git commit -m "feat(pkg): публичные экспорты, демо-страница и prepare-сборка"
 ```
 
 ---
