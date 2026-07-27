@@ -461,14 +461,15 @@ export interface ReferralInvitee {
   firstName: string | null;
   username: string | null;
   joinedAt: string;
-  earnedFromThemTon: number;
+  /** Без суффикса валюты: у matreshka это GRAM, а не TON. */
+  earnedFromThem: number;
 }
 
 export interface Referrals {
   refCode: string | null;
   refLink: string | null;
   invitedCount: number;
-  totalEarnedTon: number;
+  totalEarned: number;
   ratePercent: number;
   refBalance: number;
   invitees: ReferralInvitee[];
@@ -497,6 +498,13 @@ export interface Leaderboard {
   me: LeaderboardEntry | null;
 }
 
+/**
+ * Snake_case здесь не ошибка: ключи совпадают один-в-один и с телом PUT-запроса
+ * на бэк (адаптер отправляет объект как есть, без маппинга), и с i18n-ключами
+ * `notifications.*`, по которым экран итерируется списком, а не хардкодит поля.
+ * Приведение к camelCase потребовало бы менять контракт всех шести бэков и все
+ * десять файлов локалей разом — ради нуля функциональной пользы.
+ */
 export interface NotificationPrefs {
   deposit_credited: boolean;
   withdraw_confirmed: boolean;
@@ -525,6 +533,27 @@ export interface Withdrawal {
   createdAt: string;
 }
 
+/** Страница гроссбуха. Именована, потому что на этапе 3 появится второй такой же
+ *  курсорный метод — история раундов. */
+export interface TransactionPage {
+  items: Transaction[];
+  nextCursor: string | null;
+}
+
+/** Квитанция вывода: экран показывает игроку короткий ID и статус сразу после
+ *  отправки, поэтому postWithdraw обязан её вернуть, а не Promise<void>. */
+export interface WithdrawTicket {
+  id: string;
+  status: string;
+}
+
+/** Квитанция обращения в поддержку: номер тикета и число принятых вложений
+ *  попадают в сообщение об успешной отправке. */
+export interface SupportTicket {
+  ticketId: string;
+  filesCount: number;
+}
+
 export type SupportTheme = 'finance' | 'game' | 'account' | 'bug' | 'partner' | 'other';
 
 /**
@@ -539,12 +568,12 @@ export interface HudAdapter {
   getPercentiles(): Promise<Percentiles>;
   getLeaderboard(mode: LeaderboardMode, window: LeaderboardWindow): Promise<Leaderboard>;
   getReferrals(): Promise<Referrals>;
-  getTransactions(cursor?: string): Promise<{ items: Transaction[]; nextCursor: string | null }>;
+  getTransactions(cursor?: string): Promise<TransactionPage>;
   getNotificationPrefs(): Promise<NotificationPrefs>;
   putNotificationPrefs(prefs: Partial<NotificationPrefs>): Promise<NotificationPrefs>;
   getDeposit(): Promise<Deposit>;
-  postWithdraw(amount: number, address: string | null): Promise<void>;
-  postSupport(text: string, theme: SupportTheme, files: File[]): Promise<void>;
+  postWithdraw(amount: number, address: string | null): Promise<WithdrawTicket>;
+  postSupport(text: string, theme: SupportTheme, files: File[]): Promise<SupportTicket>;
 
   /** Есть не у всех бэков — блок «привязать кошелёк» рендерится только с ним. */
   postWalletLink?(address: string): Promise<void>;
@@ -809,7 +838,7 @@ export const FAKE_REFERRALS: Referrals = {
       firstName: 'Ann',
       username: 'ann',
       joinedAt: '2026-07-01T10:00:00.000Z',
-      earnedFromThemTon: 1,
+      earnedFromThem: 1,
     },
   ],
 };
@@ -876,8 +905,8 @@ export function makeFakeAdapter(over: Partial<HudAdapter> = {}): HudAdapter {
     getNotificationPrefs: vi.fn(async () => FAKE_PREFS),
     putNotificationPrefs: vi.fn(async (p) => ({ ...FAKE_PREFS, ...p })),
     getDeposit: vi.fn(async () => FAKE_DEPOSIT),
-    postWithdraw: vi.fn(async () => {}),
-    postSupport: vi.fn(async () => {}),
+    postWithdraw: vi.fn(async () => ({ id: 'wd-12345678', status: 'pending' })),
+    postSupport: vi.fn(async () => ({ ticketId: 'TK-42', filesCount: 0 })),
     ...over,
   };
 }
@@ -2266,7 +2295,10 @@ Expected: тесты словарей зелёные — значит ключи
 - `api.postWalletLink(token, address)` → блок рендерить только при
   `typeof adapter.postWalletLink === 'function'`, вызывать `adapter.postWalletLink(address)`
 - `api.postWithdraw(token, ton)` → `adapter.postWithdraw(ton, address || null)`,
-  где `address` — значение `useTonAddress()`
+  где `address` — значение `useTonAddress()`. Возвращённую квитанцию **использовать**:
+  сообщение `wallet.withdraw_created` показывает игроку короткий ID и статус
+  (`{ id: r.id.slice(0, 8), status: r.status }`) — без этого он не узнает, что вывод
+  создан
 - добавить блок выводов: если `adapter.getWithdrawals` есть, тянуть через
   `useHudResource('withdrawals', (a) => a.getWithdrawals!())` и рисовать список в
   `<div className="hud-wallet-withdrawals">`; если метода нет — блок не рендерить
@@ -2958,7 +2990,9 @@ Expected: FAIL — три `Failed to resolve import`.
 
 `L/src/profile/HelpScreen.tsx` — копия `F/components/profile/HelpScreen.tsx` с T1–T7, плюс:
 - `api.postSupport(token, text, files, theme)` → `adapter.postSupport(text, theme, files)`
-  (порядок аргументов приведён к контракту адаптера)
+  (порядок аргументов приведён к контракту адаптера). Возвращённую квитанцию
+  **использовать**: сообщение `support.ok` подставляет `r.ticketId`, а фрагмент
+  `support.ok_files` — `r.filesCount`, если вложения были
 - начальная тема — `helpTheme ?? 'other'` из стора, после успешной отправки вызывать
   `clearHelpTheme()`
 - кнопка отправки заблокирована при пустом тексте
@@ -3866,12 +3900,9 @@ export const hudAdapter: HudAdapter = {
   putNotificationPrefs: (prefs) => api.putNotificationPrefs(token(), prefs),
   getDeposit: () => api.getDeposit(token()),
   // Толстяк выводит на привязанный кошелёк — адрес в запросе не нужен.
-  postWithdraw: async (amount) => {
-    await api.postWithdraw(token(), amount);
-  },
-  postSupport: async (text, theme, files) => {
-    await api.postSupport(token(), text, files, theme);
-  },
+  postWithdraw: (amount) => api.postWithdraw(token(), amount),
+  // У api.postSupport другой порядок аргументов, чем в контракте.
+  postSupport: (text, theme, files) => api.postSupport(token(), text, files, theme),
   postWalletLink: async (address) => {
     await api.postWalletLink(token(), address);
   },
