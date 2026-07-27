@@ -1,0 +1,24 @@
+import { describe, expect, it } from 'vitest';
+import { fmtAmount } from './money';
+
+describe('fmtAmount', () => {
+  it('печатает две значащие цифры после запятой', () => {
+    expect(fmtAmount(1.5)).toBe('1.50');
+    expect(fmtAmount(0)).toBe('0.00');
+    expect(fmtAmount(1234.567)).toBe('1234.57');
+  });
+
+  it('считает null и undefined нулём, а не падает', () => {
+    expect(fmtAmount(null)).toBe('0.00');
+    expect(fmtAmount(undefined)).toBe('0.00');
+  });
+
+  it('не превращает NaN и Infinity в мусор на экране', () => {
+    expect(fmtAmount(Number.NaN)).toBe('0.00');
+    expect(fmtAmount(Number.POSITIVE_INFINITY)).toBe('0.00');
+  });
+
+  it('печатает отрицательные суммы со знаком', () => {
+    expect(fmtAmount(-3.2)).toBe('-3.20');
+  });
+});

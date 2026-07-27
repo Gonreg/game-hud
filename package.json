@@ -1,0 +1,49 @@
+{
+  "name": "@gonreg/game-hud",
+  "version": "0.1.0",
+  "type": "module",
+  "files": ["dist"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./styles.css": "./dist/style.css",
+    "./i18n": { "types": "./dist/i18n/index.d.ts", "import": "./dist/i18n.js" }
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --open /demo/index.html",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "react-window": "^1.8.11"
+  },
+  "peerDependencies": {
+    "@tonconnect/ui-react": "^2.4.4",
+    "i18next": "^23.11.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@tonconnect/ui-react": "^2.4.4",
+    "@types/react": "^18.3.30",
+    "@types/react-dom": "^18.3.7",
+    "@types/react-window": "^1.8.8",
+    "@vitejs/plugin-react": "^4.3.4",
+    "i18next": "^23.16.8",
+    "jsdom": "^29.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.7.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.3.0",
+    "vitest": "^2.1.8",
+    "zustand": "^5.0.14"
+  }
+}
