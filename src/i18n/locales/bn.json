@@ -73,6 +73,12 @@
       "bonus_release": "বোনাস মুক্ত",
       "ref_payout": "রেফারেল পেআউট",
       "manual_adj": "সমন্বয়"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

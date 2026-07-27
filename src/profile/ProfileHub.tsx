@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTonAddress } from '@tonconnect/ui-react';
+import { useHudAdapter } from '../context/HudProvider';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { useHudResource } from '../context/useHudResource';
 import { fmtAmount } from '../format/money';
@@ -26,6 +27,7 @@ interface RowDef {
 
 export function ProfileHub() {
   const { t } = useTranslation();
+  const adapter = useHudAdapter();
   const setScreen = useHudStore((s) => s.setScreen);
   const { data: me } = useHudResource('me', (a) => a.getMe());
   // Кошелёк подключается на клиенте через TonConnect и на бэке не хранится
@@ -41,6 +43,12 @@ export function ProfileHub() {
     .join('')
     .toUpperCase();
 
+  // Пункт «История» рендерится, только если бэк реализует хотя бы один из двух
+  // методов истории — у matreshka нет getTransactions, у гроссбучных игр нет
+  // getGameHistory, а если нет обоих, самому экрану неоткуда взять данные.
+  const hasHistory =
+    typeof adapter.getTransactions === 'function' || typeof adapter.getGameHistory === 'function';
+
   const rows: RowDef[] = [
     {
       id: 'wallet',
@@ -48,7 +56,9 @@ export function ProfileHub() {
       label: t('profile.menu_wallet'),
       hint: walletAddress ? t('profile.wallet_connected') : t('profile.wallet_not_connected'),
     },
-    { id: 'history', Icon: IconHistory, label: t('profile.menu_history') },
+    ...(hasHistory
+      ? [{ id: 'history' as const, Icon: IconHistory, label: t('profile.menu_history') }]
+      : []),
     {
       id: 'referrals',
       Icon: IconUsers,

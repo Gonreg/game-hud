@@ -8,12 +8,18 @@ import {
   FAKE_PREFS,
   FAKE_REFERRALS,
   FAKE_STATS,
-  FAKE_TX,
 } from './fixtures';
 
 export * from './fixtures';
 
-/** Адаптер, у которого всё резолвится. Переопредели нужный метод в тесте. */
+/**
+ * Адаптер, у которого всё резолвится. Переопредели нужный метод в тесте.
+ *
+ * `getTransactions` и `getGameHistory` сюда не входят: оба метода истории
+ * необязательные в контракте (у matreshka нет первого, у гроссбучных игр —
+ * второго), и по общему правилу опциональные методы в дефолт не кладутся —
+ * их передают точечно через `over`, как и `postWalletLink`/`getWithdrawals`.
+ */
 export function makeFakeAdapter(over: Partial<HudAdapter> = {}): HudAdapter {
   return {
     getMe: vi.fn(async () => FAKE_ME),
@@ -21,7 +27,6 @@ export function makeFakeAdapter(over: Partial<HudAdapter> = {}): HudAdapter {
     getPercentiles: vi.fn(async () => FAKE_PERCENTILES),
     getLeaderboard: vi.fn(async () => FAKE_LEADERBOARD),
     getReferrals: vi.fn(async () => FAKE_REFERRALS),
-    getTransactions: vi.fn(async () => ({ items: [FAKE_TX], nextCursor: null })),
     getNotificationPrefs: vi.fn(async () => FAKE_PREFS),
     putNotificationPrefs: vi.fn(async (p) => ({ ...FAKE_PREFS, ...p })),
     getDeposit: vi.fn(async () => FAKE_DEPOSIT),

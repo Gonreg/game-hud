@@ -73,6 +73,12 @@
       "bonus_release": "බෝනස් මුදා හරියි",
       "ref_payout": "යොමු ගෙවීම",
       "manual_adj": "සකස් කිරීම"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

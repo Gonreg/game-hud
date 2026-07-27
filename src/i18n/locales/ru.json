@@ -73,6 +73,12 @@
       "bonus_release": "Бонус разблокирован",
       "ref_payout": "Реф-выплата",
       "manual_adj": "Корректировка"
+    },
+    "status": {
+      "cashed": "Кэшаут",
+      "completed": "Пройдено",
+      "empty_won": "Угадал",
+      "busted": "Слив"
     }
   },
   "stats": {

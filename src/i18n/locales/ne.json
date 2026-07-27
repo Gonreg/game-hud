@@ -73,6 +73,12 @@
       "bonus_release": "बोनस मुक्त",
       "ref_payout": "रेफरल भुक्तानी",
       "manual_adj": "समायोजन"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

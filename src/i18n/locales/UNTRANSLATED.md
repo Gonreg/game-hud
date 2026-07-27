@@ -28,6 +28,22 @@
 - `wallet.promo_title` (Task 12: перенос из matreshka, где переведён только для `en`/`ru`)
 - `wallet.bonus_note` (Task 12: перенос из matreshka, где переведён только для `en`/`ru`)
 
+## history.status.* (второй экран истории — раунды, Task 20)
+
+Ключи `history.status.cashed`, `history.status.completed`, `history.status.empty_won`,
+`history.status.busted` переведены только на `en` и `ru`: русский текст взят из
+matreshka (`STATUS_LABELS` в `frontend/src/profile/HistoryScreen.tsx`), где он был
+захардкожен прямо в компоненте, а не в словаре, и переведён только на два языка тем же
+образом, что и `sound.*` выше.
+
+Для остальных восьми языков (`es`, `de`, `fr`, `hi`, `ur`, `bn`, `si`, `ne`) подставлен
+английский текст — по той же причине, что и везде в этом файле: полагаться на
+`fallbackLng` нельзя, он разный по играм (`'ru'` у crash-race и basketball).
+
+Статусы взяты из matreshka как пример; конкретный бэк волен присылать любую свою
+строку — экран переводит её через `t('history.status.' + status, { defaultValue:
+status })`, так что непереведённый статус покажет сырое слово, а не сломает экран.
+
 ## Почему здесь английский текст, а не отсутствие ключа
 
 Полагаться на `fallbackLng` в i18next нельзя: его настраивает игра, и настроен он

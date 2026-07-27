@@ -73,6 +73,12 @@
       "bonus_release": "Bono liberado",
       "ref_payout": "Pago de referido",
       "manual_adj": "Ajuste"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

@@ -1,5 +1,6 @@
 import type {
   Deposit,
+  GameRound,
   Leaderboard,
   Me,
   NotificationPrefs,
@@ -125,5 +126,14 @@ export const FAKE_TX: Transaction = {
   balanceBefore: 7.5,
   balanceAfter: 12.5,
   refId: null,
+  createdAt: '2026-07-20T09:00:00.000Z',
+};
+
+export const FAKE_ROUND: GameRound = {
+  id: 'r1',
+  bet: 2,
+  payout: 10,
+  coef: 5,
+  status: 'cashed',
   createdAt: '2026-07-20T09:00:00.000Z',
 };

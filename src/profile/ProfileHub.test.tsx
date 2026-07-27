@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProfileHub } from './ProfileHub';
 import { useHudStore } from '../store/hudStore';
 import { renderWithHud } from '../test/renderWithHud';
-import { makeFailingAdapter } from '../test/fakeAdapter';
+import { makeFailingAdapter, makeFakeAdapter } from '../test/fakeAdapter';
 
 vi.mock('@tonconnect/ui-react', () => ({
   useTonAddress: () => '',
@@ -40,5 +40,11 @@ describe('ProfileHub', () => {
   it('переживает падение адаптера и не роняет экран', async () => {
     renderWithHud(<ProfileHub />, { adapter: makeFailingAdapter() });
     await waitFor(() => expect(screen.getAllByText('0.00').length).toBeGreaterThan(0));
+  });
+
+  it('без getTransactions и getGameHistory пункта «История» в меню нет', async () => {
+    renderWithHud(<ProfileHub />, { adapter: makeFakeAdapter() });
+    await waitFor(() => expect(screen.getByText('Test')).toBeInTheDocument());
+    expect(screen.queryByText(/history/i)).not.toBeInTheDocument();
   });
 });

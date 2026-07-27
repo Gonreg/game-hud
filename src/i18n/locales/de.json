@@ -73,6 +73,12 @@
       "bonus_release": "Bonus freigegeben",
       "ref_payout": "Ref-Auszahlung",
       "manual_adj": "Anpassung"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

@@ -5,20 +5,25 @@ import { HistoryScreen } from './HistoryScreen';
 import { renderWithHud } from '../test/renderWithHud';
 import { makeFakeAdapter, makeFailingAdapter, FAKE_TX } from '../test/fakeAdapter';
 
+// getTransactions необязателен в контракте, поэтому makeFakeAdapter() больше
+// не кладёт его по умолчанию — передаём точечно, как и остальные тесты файла.
+const fakeTxPage = () => vi.fn(async () => ({ items: [FAKE_TX], nextCursor: null }));
+
 describe('HistoryScreen', () => {
   it('показывает первую страницу транзакций', async () => {
-    renderWithHud(<HistoryScreen />);
+    const adapter = makeFakeAdapter({ getTransactions: fakeTxPage() });
+    renderWithHud(<HistoryScreen />, { adapter });
     await waitFor(() => expect(screen.getByText(/5\.00/)).toBeInTheDocument());
   });
 
   it('запрашивает первую страницу без курсора', async () => {
-    const adapter = makeFakeAdapter();
+    const adapter = makeFakeAdapter({ getTransactions: fakeTxPage() });
     renderWithHud(<HistoryScreen />, { adapter });
     await waitFor(() => expect(adapter.getTransactions).toHaveBeenCalledWith(undefined));
   });
 
   it('не тянет следующую страницу, когда nextCursor пустой', async () => {
-    const adapter = makeFakeAdapter();
+    const adapter = makeFakeAdapter({ getTransactions: fakeTxPage() });
     renderWithHud(<HistoryScreen />, { adapter });
     await waitFor(() => expect(adapter.getTransactions).toHaveBeenCalledTimes(1));
     await new Promise((r) => setTimeout(r, 60));
@@ -58,7 +63,7 @@ describe('HistoryScreen', () => {
   // одном и том же смонтированном инстансе — то, от чего действительно едет
   // список.
   it('не удваивает первую страницу при повторном вызове эффекта (StrictMode)', async () => {
-    const adapter = makeFakeAdapter();
+    const adapter = makeFakeAdapter({ getTransactions: fakeTxPage() });
     renderWithHud(
       <StrictMode>
         <HistoryScreen />

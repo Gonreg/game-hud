@@ -73,6 +73,12 @@
       "bonus_release": "Bonus released",
       "ref_payout": "Referral payout",
       "manual_adj": "Adjustment"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

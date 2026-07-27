@@ -139,6 +139,20 @@ export interface TransactionPage {
   nextCursor: string | null;
 }
 
+/** Один сыгранный раунд в истории игрока. */
+export interface GameRound {
+  id: string;
+  /** Сумма ставки в дробных единицах отображения. */
+  bet: number;
+  /** Выплата; ноль, если раунд проигран. */
+  payout: number;
+  /** Коэффициент раунда. */
+  coef: number;
+  /** Исход в терминах игры: cashed, busted, completed и так далее. */
+  status: string;
+  createdAt: string;
+}
+
 /** Квитанция вывода: экран показывает игроку короткий ID и статус сразу после
  *  отправки, поэтому postWithdraw обязан её вернуть, а не Promise<void>. */
 export interface WithdrawTicket {
@@ -167,7 +181,6 @@ export interface HudAdapter {
   getPercentiles(): Promise<Percentiles>;
   getLeaderboard(mode: LeaderboardMode, window: LeaderboardWindow): Promise<Leaderboard>;
   getReferrals(): Promise<Referrals>;
-  getTransactions(cursor?: string): Promise<TransactionPage>;
   getNotificationPrefs(): Promise<NotificationPrefs>;
   /**
    * Принимает объект целиком, а не патч. Бэки ведут себя по-разному: у
@@ -184,6 +197,18 @@ export interface HudAdapter {
   postWalletLink?(address: string): Promise<void>;
   /** Есть не у всех бэков — список выводов рендерится только с ним. */
   getWithdrawals?(): Promise<Withdrawal[]>;
+  /**
+   * Гроссбух: пополнения, выводы, ставки как проводки. Есть не у всех бэков —
+   * у matreshka такого эндпоинта нет вовсе, там только история раундов.
+   * Кабинет показывает пункт «История», если реализован хотя бы один из двух
+   * методов, и рисует соответствующий экран.
+   */
+  getTransactions?(cursor?: string): Promise<TransactionPage>;
+  /**
+   * История сыгранных раундов. Альтернатива гроссбуху для игр, где финансовых
+   * проводок наружу нет.
+   */
+  getGameHistory?(limit: number): Promise<GameRound[]>;
 }
 
 export interface HudConfig {

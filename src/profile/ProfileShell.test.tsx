@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProfileShell } from './ProfileShell';
 import { useHudStore } from '../store/hudStore';
 import { renderWithHud } from '../test/renderWithHud';
+import { makeFakeAdapter } from '../test/fakeAdapter';
 
 vi.mock('@tonconnect/ui-react', () => ({
   useTonAddress: () => '',
@@ -39,6 +40,23 @@ describe('ProfileShell', () => {
     renderWithHud(<ProfileShell />);
     await userEvent.click(screen.getByRole('button', { name: /close/i }));
     expect(useHudStore.getState().open).toBe(false);
+  });
+
+  it('на экране history с адаптером, у которого есть getTransactions, открывается гроссбух', async () => {
+    const adapter = makeFakeAdapter({
+      getTransactions: vi.fn(async () => ({ items: [], nextCursor: null })),
+    });
+    useHudStore.setState({ open: true, screen: 'history' });
+    renderWithHud(<ProfileShell />, { adapter });
+    await waitFor(() => expect(adapter.getTransactions).toHaveBeenCalled());
+    expect(adapter.getGameHistory).toBeUndefined();
+  });
+
+  it('на экране history с адаптером, у которого только getGameHistory, открывается история раундов', async () => {
+    const adapter = makeFakeAdapter({ getGameHistory: vi.fn(async () => []) });
+    useHudStore.setState({ open: true, screen: 'history' });
+    renderWithHud(<ProfileShell />, { adapter });
+    await waitFor(() => expect(adapter.getGameHistory).toHaveBeenCalled());
   });
 
   it('показывает и прячет Telegram BackButton вместе с оверлеем', () => {

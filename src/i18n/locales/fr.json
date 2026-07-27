@@ -73,6 +73,12 @@
       "bonus_release": "Bonus libéré",
       "ref_payout": "Paiement de parrainage",
       "manual_adj": "Ajustement"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {

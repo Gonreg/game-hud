@@ -73,6 +73,12 @@
       "bonus_release": "بونس آزاد",
       "ref_payout": "ریفرل ادائیگی",
       "manual_adj": "ایڈجسٹمنٹ"
+    },
+    "status": {
+      "cashed": "Cashed out",
+      "completed": "Completed",
+      "empty_won": "Guessed right",
+      "busted": "Busted"
     }
   },
   "stats": {
