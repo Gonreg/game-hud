@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 import { HudProvider, ProfileShell, TopBar, BetAmountInput, useHudStore } from '../src';
 import { hudLocales } from '../src/i18n';
-import { makeFakeAdapter } from '../src/test/fakeAdapter';
+import { demoAdapter } from './demoAdapter';
 import '../src/theme/styles.css';
 
 void i18n.use(initReactI18next).init({
@@ -17,7 +17,7 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-const adapter = makeFakeAdapter();
+const adapter = demoAdapter;
 
 function Demo() {
   const [bet, setBet] = useState(1);
