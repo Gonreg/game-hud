@@ -41,9 +41,19 @@ export function useTelegramSafeArea(opts: { scaleVar?: string } = {}): void {
         return;
       }
 
-      const scale = scaleVar
-        ? Number.parseFloat(getComputedStyle(root).getPropertyValue(scaleVar)) || 1
-        : 1;
+      const raw = scaleVar ? getComputedStyle(root).getPropertyValue(scaleVar).trim() : '';
+      const parsed = Number.parseFloat(raw);
+      const scale = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+
+      if (import.meta.env.DEV && scaleVar && !(Number.isFinite(parsed) && parsed > 0)) {
+        console.error(
+          `[game-hud] useTelegramSafeArea: переменная ${scaleVar} не читается с корня ` +
+            `документа (получено ${JSON.stringify(raw)}), масштаб принят за 1. ` +
+            'CSS-переменные не всплывают вверх: если игра выставляет её на #stage ' +
+            'или другом потомке, продублируй её на document.documentElement. ' +
+            'Иначе отступы в масштабированной сцене будут посчитаны неверно.',
+        );
+      }
 
       const s: Inset = tg.safeAreaInset ?? ZERO;
       const c: Inset = tg.contentSafeAreaInset ?? ZERO;

@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTelegramSafeArea } from './useTelegramSafeArea';
 import { emitTelegramEvent, telegramListenerCount } from '../../vitest.setup';
 
@@ -72,5 +72,30 @@ describe('useTelegramSafeArea', () => {
     setTg({ safeAreaInset: { top: 12, right: 0, bottom: 0, left: 0 } });
     emitTelegramEvent('safeAreaChanged');
     expect(readVar('--hud-safe-top')).toBe('12px');
+  });
+
+  it('громко ругается, когда scaleVar не читается с корня документа', () => {
+    // Ровно этот случай тихо ломал масштабированную сцену в matreshka:
+    // переменная стояла на #stage, а хук читает её с корня.
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderHook(() => useTelegramSafeArea({ scaleVar: '--нет-такой' }));
+    expect(err).toHaveBeenCalledOnce();
+    expect(err.mock.calls[0][0]).toMatch(/--нет-такой/);
+    err.mockRestore();
+  });
+
+  it('молчит, когда scaleVar читается', () => {
+    document.documentElement.style.setProperty('--stage-scale-num', '0.5');
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderHook(() => useTelegramSafeArea({ scaleVar: '--stage-scale-num' }));
+    expect(err).not.toHaveBeenCalled();
+    err.mockRestore();
+  });
+
+  it('не ругается, когда scaleVar вообще не передан', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderHook(() => useTelegramSafeArea());
+    expect(err).not.toHaveBeenCalled();
+    err.mockRestore();
   });
 });
