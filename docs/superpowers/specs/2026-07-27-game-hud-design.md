@@ -148,7 +148,7 @@ src/
     ProfileShell.tsx      оверлей, шапка с назад/закрыть, Telegram BackButton
     ProfileHub.tsx        аватар + имя, полоса балансов, пополнить/вывести, меню
     WalletScreen.tsx      TonConnect, депозит, вывод, история выводов, промо-баннеры
-    HistoryScreen.tsx     история ставок
+    HistoryScreen.tsx     история транзакций, курсорная пагинация + react-window
     ReferralsScreen.tsx   реф-ссылка, список приглашённых, заработок
     StatsScreen.tsx       статистика + перцентили
     LeaderboardScreen.tsx лидерборд с селекторами метрики и временного окна
@@ -212,18 +212,22 @@ crash-race и molot — её и забираем.
 
 ```ts
 interface HudAdapter {
+  // обязательные
   getMe(): Promise<Me>
   getStats(): Promise<Stats>
   getPercentiles(): Promise<Percentiles>
   getLeaderboard(mode: LeaderboardMode, window: LeaderboardWindow): Promise<Leaderboard>
   getReferrals(): Promise<Referrals>
-  getBetHistory(limit: number): Promise<BetHistoryItem[]>
+  getTransactions(cursor?: string): Promise<{ items: Transaction[]; nextCursor: string | null }>
   getNotificationPrefs(): Promise<NotificationPrefs>
-  putNotificationPrefs(prefs: NotificationPrefs): Promise<void>
-  getDepositAddress(): Promise<Deposit>
-  postWithdraw(amount: number, address: string): Promise<void>
-  getWithdrawals(): Promise<Withdrawal[]>
-  postSupport(text: string, theme: string, files: File[]): Promise<void>
+  putNotificationPrefs(prefs: Partial<NotificationPrefs>): Promise<NotificationPrefs>
+  getDeposit(): Promise<Deposit>
+  postWithdraw(amount: number, address: string | null): Promise<void>
+  postSupport(text: string, theme: SupportTheme, files: File[]): Promise<void>
+
+  // необязательные — экран или блок рендерится, только если метод передан
+  postWalletLink?(address: string): Promise<void>
+  getWithdrawals?(): Promise<Withdrawal[]>
 }
 ```
 
@@ -241,6 +245,21 @@ interface HudAdapter {
 Скелетоны, состояния ошибок, ретраи и пагинация — внутри библиотеки. Сети в либе нет,
 поэтому разные бэки (Go и Node) не мешают, а игра с нестандартным контрактом пишет свой
 адаптер.
+
+### Два разных экрана истории
+
+`HistoryScreen` в fatman и в matreshka — **разные экраны под одним именем**. fatman
+показывает финансовый гроссбух (пополнения, выводы, ставки как проводки) с курсорной
+пагинацией и виртуализацией через `react-window`. matreshka показывает историю игровых
+раундов: ставка, коэффициент, шаг, исход.
+
+Этап 1 берёт версию fatman — она и есть визуальный канон, и она общая для всех игр,
+у которых есть кошелёк. Экран истории раундов (`GameHistoryScreen` и метод адаптера
+`getGameHistory`) добавляется на этапе 3 вместе с matreshka; интерфейс адаптера
+расширяется необязательным методом, поэтому уже подключённые игры не ломаются.
+
+`react-window` уезжает в обычные `dependencies` библиотеки — он маленький, и игре не надо
+знать о нём вообще.
 
 ### Модели данных
 
