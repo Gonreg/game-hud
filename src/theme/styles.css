@@ -677,7 +677,7 @@
 /* ------------------------------------------------------------------------
    Часть 3. Правила HUD из global_css (fatman) — только компоненты,
    переезжающие в библиотеку (balance-chip, sound-settings gear, wallet
-   bottom-sheet, TON info, bet-settings bottom-sheet shell).
+   bottom-sheet, TON info, общая обвязка шита).
    ------------------------------------------------------------------------ */
 
 /* Balance chip — anchored to the LEFT edge BELOW the TG back-button strip so
@@ -885,23 +885,24 @@
 }
 .hud-ton-info-cta:active { transform: scale(0.98); }
 
-/* Bet settings bottom-sheet (gear icon). NB: despite the name, SoundSettings
-   also reuses this markup as a generic bottom-sheet shell — not only for
-   actual bet settings — which is why it lives in the shared library. */
-.hud-bet-settings-overlay {
+/* Общая обвязка боттом-шита: подложка, панель, шапка с заголовком и крестиком,
+   группы и строки внутри. В fatman эти правила назывались bet-settings-*, но
+   пользовались ими и панель звука, и кошелёк — имя вводило в заблуждение,
+   поэтому в библиотеке они называются по назначению. */
+.hud-sheet-backdrop {
   position: absolute; inset: 0;
   background: rgba(8, 10, 30, 0.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 30;
   display: flex; align-items: flex-end; justify-content: center;
-  animation: hud-bet-settings-overlay-in 0.18s ease-out;
+  animation: hud-sheet-backdrop-in 0.18s ease-out;
 }
-@keyframes hud-bet-settings-overlay-in {
+@keyframes hud-sheet-backdrop-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-.hud-bet-settings-sheet {
+.hud-sheet {
   width: 100%;
   background: var(--hud-panel);
   backdrop-filter: blur(16px);
@@ -910,20 +911,20 @@
   border-top-right-radius: 22px;
   padding: 16px 16px calc(20px + var(--hud-safe-bottom));
   display: grid; gap: 14px;
-  animation: hud-bet-settings-sheet-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+  animation: hud-sheet-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-@keyframes hud-bet-settings-sheet-in {
+@keyframes hud-sheet-in {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
 }
-.hud-bet-settings-head {
+.hud-sheet__head {
   display: flex; align-items: center; justify-content: space-between;
 }
-.hud-bet-settings-title {
+.hud-sheet__title {
   font-family: var(--hud-display); font-weight: 800; font-size: 17px;
   color: var(--hud-ink);
 }
-.hud-bet-settings-close {
+.hud-sheet__close {
   appearance: none; border: 0;
   width: 32px; height: 32px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
@@ -932,51 +933,51 @@
   cursor: pointer;
   padding: 0;
 }
-.hud-bet-settings-close:hover { background: rgba(255,255,255,0.14); }
-.hud-bet-settings-close svg { width: 16px; height: 16px; }
-.hud-bet-settings-group {
+.hud-sheet__close:hover { background: rgba(255,255,255,0.14); }
+.hud-sheet__close svg { width: 16px; height: 16px; }
+.hud-sheet__group {
   display: grid; gap: 8px;
   padding: 12px;
   background: rgba(255,255,255,0.04);
   border-radius: 14px;
 }
-.hud-bet-settings-group-label {
+.hud-sheet__group-label {
   font-family: var(--hud-label); font-size: 11px; font-weight: 600;
   color: var(--hud-ink-dim);
   text-transform: uppercase; letter-spacing: 0.05em;
 }
-.hud-bet-settings-row {
+.hud-sheet__row {
   display: flex; align-items: center; gap: 10px;
   min-height: 32px;
 }
-.hud-bet-settings-row-main {
+.hud-sheet__row-main {
   display: flex; align-items: center; gap: 8px;
   flex: 1; min-width: 0;
   color: var(--hud-ink);
   font-size: 14px;
   cursor: pointer;
 }
-.hud-bet-settings-row-main input[type="checkbox"] {
+.hud-sheet__row-main input[type="checkbox"] {
   width: 16px; height: 16px; accent-color: var(--hud-coral);
   cursor: pointer;
 }
-.hud-bet-settings-row-input {
+.hud-sheet__row-input {
   display: flex; align-items: baseline; gap: 4px;
   background: rgba(255,255,255,0.05);
   border-radius: 10px;
   padding: 4px 10px;
   font-family: var(--hud-mono);
 }
-.hud-bet-settings-row-input input {
+.hud-sheet__row-input input {
   width: 56px;
   background: transparent; border: 0; outline: none;
   color: var(--hud-ink);
   font-family: var(--hud-mono); font-size: 14px; font-weight: 600;
   text-align: right;
 }
-.hud-bet-settings-row-input input:disabled { opacity: 0.4; }
-.hud-bet-settings-row-input span { color: var(--hud-ink-soft); font-size: 12px; }
-.hud-bet-settings-hint {
+.hud-sheet__row-input input:disabled { opacity: 0.4; }
+.hud-sheet__row-input span { color: var(--hud-ink-soft); font-size: 12px; }
+.hud-sheet__hint {
   font-family: var(--hud-mono); font-size: 11px; color: var(--hud-ink-dim);
   line-height: 1.4;
 }

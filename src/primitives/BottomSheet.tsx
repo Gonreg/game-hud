@@ -28,9 +28,9 @@ export function BottomSheet({
   if (!open) return null;
 
   return (
-    <div className="hud-bet-settings-overlay" onPointerDown={onClose}>
+    <div className="hud-sheet-backdrop" onPointerDown={onClose}>
       <div
-        className="hud-bet-settings-sheet"
+        className="hud-sheet"
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
