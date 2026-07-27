@@ -1157,8 +1157,13 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { HudProvider } from './HudProvider';
 import { useHudResource } from './useHudResource';
-import { makeFakeAdapter } from '../test/fakeAdapter';
-import type { HudAdapter } from '../adapter/types';
+import { makeFakeAdapter, FAKE_LEADERBOARD } from '../test/fakeAdapter';
+import type {
+  HudAdapter,
+  Leaderboard,
+  LeaderboardMode,
+  LeaderboardWindow,
+} from '../adapter/types';
 
 function wrapper(adapter: HudAdapter) {
   return ({ children }: { children: ReactNode }) => (
@@ -1213,26 +1218,41 @@ describe('useHudResource', () => {
     await waitFor(() => expect(adapter.getMe).toHaveBeenCalledTimes(2));
   });
 
-  it('не пишет состояние после размонтирования', async () => {
-    let resolve: (v: unknown) => void = () => {};
+  // Этот тест — про гонку, и он единственный, который реально проверяет отмену.
+  // Проверка «не пишет состояние после размонтирования» через spy на console.error
+  // бесполезна: React 18 убрал предупреждение об обновлении размонтированного
+  // компонента, поэтому такой тест проходит и со полностью снятой отменой.
+  // А вот перетирание свежих данных поздним ответом — наблюдаемо.
+  it('поздний ответ на устаревший ключ не перетирает свежие данные', async () => {
+    let resolveSlow: (v: Leaderboard) => void = () => {};
+    let calls = 0;
     const adapter = makeFakeAdapter({
-      getMe: vi.fn(
-        () =>
-          new Promise((r) => {
-            resolve = r;
-          }),
-      ) as never,
+      getLeaderboard: vi.fn((_mode: LeaderboardMode, win: LeaderboardWindow) => {
+        calls += 1;
+        // Первый запрос висит, второй отвечает сразу — так возникает гонка.
+        if (calls === 1) {
+          return new Promise<Leaderboard>((r) => {
+            resolveSlow = r;
+          });
+        }
+        return Promise.resolve({ ...FAKE_LEADERBOARD, window: win });
+      }) as never,
     });
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { unmount } = renderHook(() => useHudResource('me', (a) => a.getMe()), {
-      wrapper: wrapper(adapter),
-    });
-    unmount();
+
+    const { result, rerender } = renderHook(
+      ({ w }: { w: LeaderboardWindow }) =>
+        useHudResource(`lb:${w}`, (a) => a.getLeaderboard('profit', w)),
+      { wrapper: wrapper(adapter), initialProps: { w: '7d' as LeaderboardWindow } },
+    );
+
+    rerender({ w: '30d' as LeaderboardWindow });
+    await waitFor(() => expect(result.current.data?.window).toBe('30d'));
+
     await act(async () => {
-      resolve({ balance: 1 });
+      resolveSlow({ ...FAKE_LEADERBOARD, window: '7d' });
     });
-    expect(spy).not.toHaveBeenCalled();
-    spy.mockRestore();
+
+    expect(result.current.data?.window).toBe('30d');
   });
 
   it('перезапрашивает при смене ключа', async () => {
