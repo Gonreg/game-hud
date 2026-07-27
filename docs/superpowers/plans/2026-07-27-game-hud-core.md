@@ -465,6 +465,11 @@ export interface Stats {
   weekProfit: number;
 }
 
+/**
+ * Доли от нуля до единицы, а НЕ проценты: 0.8 значит «лучше 80% игроков».
+ * Так считает бэк (`lo / sorted.length`), и экран статистики домножает на 100
+ * сам. Адаптер, который отдаст сюда проценты, нарисует «лучше 8000%».
+ */
 export interface Percentiles {
   rounds: number | null;
   bestMult: number | null;
@@ -854,12 +859,15 @@ export const FAKE_STATS: Stats = {
   weekProfit: 8,
 };
 
+// Доли, а не проценты — см. комментарий над Percentiles в adapter/types.
+// winrate намеренно не 0.55: иначе «лучше 55%» столкнулось бы в запросах по
+// тексту с самим винрейтом «55.0%» из FAKE_STATS.
 export const FAKE_PERCENTILES: Percentiles = {
-  rounds: 60,
-  bestMult: 80,
-  winrate: 55,
-  profit: 70,
-  avgBet: 40,
+  rounds: 0.6,
+  bestMult: 0.8,
+  winrate: 0.72,
+  profit: 0.7,
+  avgBet: 0.4,
 };
 
 export const FAKE_REFERRALS: Referrals = {
@@ -2675,7 +2683,8 @@ describe('StatsScreen', () => {
 
   it('форматирует денежные поля единым форматтером', async () => {
     renderWithHud(<StatsScreen />);
-    await waitFor(() => expect(screen.getByText(/20\.00/)).toBeInTheDocument());
+    // Со знаком: иначе регулярка поймала бы и totalWon «120.00».
+    await waitFor(() => expect(screen.getByText(/\+20\.00/)).toBeInTheDocument());
   });
 
   it('печатает винрейт процентами, а не долей', async () => {
@@ -2788,7 +2797,9 @@ describe('LeaderboardScreen', () => {
     const adapter = makeFakeAdapter({
       getLeaderboard: vi.fn(async () => ({
         ...FAKE_LEADERBOARD,
-        me: { ...FAKE_LEADERBOARD.top[0], rank: 17, name: 'Me', userId: 'u1' },
+        // Ранг больше 20: отдельная карточка «твоё место» в fatman рисуется
+        // только для тех, кто не попал в топ-20.
+        me: { ...FAKE_LEADERBOARD.top[0], rank: 42, name: 'Me', userId: 'u1' },
       })),
     });
     renderWithHud(<LeaderboardScreen />, { adapter });
