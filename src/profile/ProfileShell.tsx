@@ -7,6 +7,10 @@ import { HistoryScreen } from './HistoryScreen';
 import { ReferralsScreen } from './ReferralsScreen';
 import { StatsScreen } from './StatsScreen';
 import { LeaderboardScreen } from './LeaderboardScreen';
+import { NotificationsScreen } from './NotificationsScreen';
+import { LanguageScreen } from './LanguageScreen';
+import { HelpScreen } from './HelpScreen';
+import { LegalScreen } from './LegalScreen';
 import { LegalFooter } from './LegalFooter';
 import { IconArrowLeft, IconClose } from '../primitives/icons';
 
@@ -78,12 +82,12 @@ export function ProfileShell() {
           {screen === 'referrals' && <ReferralsScreen />}
           {screen === 'stats' && <StatsScreen />}
           {screen === 'leaderboard' && <LeaderboardScreen />}
-          {screen === 'notifications' && null /* TODO: Task 17 */}
-          {screen === 'language' && null /* TODO: Task 18 */}
-          {screen === 'help' && null /* TODO: Task 18 */}
-          {screen === 'terms' && null /* TODO: Task 18 */}
-          {screen === 'privacy' && null /* TODO: Task 18 */}
-          {screen === 'offer' && null /* TODO: Task 18 */}
+          {screen === 'notifications' && <NotificationsScreen />}
+          {screen === 'language' && <LanguageScreen />}
+          {screen === 'help' && <HelpScreen />}
+          {screen === 'terms' && <LegalScreen doc="terms" />}
+          {screen === 'privacy' && <LegalScreen doc="privacy" />}
+          {screen === 'offer' && <LegalScreen doc="offer" />}
           {!LEGAL_SCREENS.has(screen) && <LegalFooter />}
         </div>
       </div>
