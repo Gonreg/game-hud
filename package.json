@@ -1,6 +1,6 @@
 {
   "name": "@gonreg/game-hud",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "files": [
     "dist"
@@ -17,7 +17,8 @@
     }
   },
   "scripts": {
-    "build": "vite build && node -e \"require('node:fs').copyFileSync('src/theme/styles.css','dist/styles.css')\"",
+    "build": "vite build && node -e \"require('node:fs').copyFileSync('src/theme/styles.css','dist/styles.css')\" && npm run build:standalone",
+    "build:standalone": "vite build --config vite.standalone.config.ts",
     "dev": "vite --open /demo/index.html",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

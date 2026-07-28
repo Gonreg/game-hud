@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>game-hud standalone bundle check</title>
+  </head>
+  <body>
+    <!--
+      Проверка dist/standalone.js как его увидит scratch-game: голый HTML без
+      сборщика, один <script> тег на бандл, фейковый адаптер и мост написаны
+      прямо тут — ничего не импортируется из src/. Оставлена в репозитории как
+      инструмент проверки бандла впредь (см. задачу 0.4.0).
+    -->
+    <div style="position: fixed; inset: 0 0 auto 0; z-index: 10; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; background: #111; font-family: sans-serif">
+      <button id="btn-mount" type="button">mount</button>
+      <button id="btn-profile" type="button">openProfile()</button>
+      <button id="btn-wallet" type="button">openWallet()</button>
+      <button id="btn-history" type="button">openHistory()</button>
+      <button id="btn-close" type="button">close()</button>
+      <button id="btn-balance" type="button">setBalance(random)</button>
+      <button id="btn-lang-ru" type="button">setLanguage('ru')</button>
+      <button id="btn-lang-en" type="button">setLanguage('en')</button>
+      <button id="btn-unmount" type="button">unmount</button>
+    </div>
+    <div id="hud-root" style="position: fixed; inset: 0"></div>
+
+    <script src="../dist/standalone.js"></script>
+    <script>
+      // ---- Фейковый HudAdapter, без единого импорта из src/ ----
+      let walletAddress = null;
+      let walletLinked = null;
+      const withdrawals = [];
+      const transactions = [
+        { id: 'tx-1', kind: 'bet', amount: -1.5, createdAt: new Date(Date.now() - 3600_000).toISOString() },
+        { id: 'tx-2', kind: 'win', amount: 4.2, createdAt: new Date(Date.now() - 1800_000).toISOString() },
+      ];
+
+      const fakeAdapter = {
+        getMe: () =>
+          Promise.resolve({
+            id: 'u1',
+            tgId: '1',
+            tgUsername: 'demo_player',
+            tgFirstName: 'Demo',
+            balance: 12.5,
+            bonusBalance: 3,
+            refBalance: 1.25,
+            refCode: 'ABC123',
+            refLink: 'https://t.me/demo_bot?start=ABC123',
+            walletAddress: walletLinked,
+          }),
+        getStats: () =>
+          Promise.resolve({
+            roundsPlayed: 42,
+            bestMultiplier: 12.4,
+            totalWagered: 210,
+            totalWon: 190,
+            netProfit: -20,
+            winrate: 0.48,
+            bestStreak: 5,
+            avgBet: 5,
+            biggestWin: 60,
+            biggestLoss: 15,
+            worstStreak: 3,
+            todayBets: 4,
+            todayProfit: 2,
+            weekBets: 20,
+            weekProfit: -10,
+          }),
+        getPercentiles: () =>
+          Promise.resolve({ rounds: 0.6, bestMult: 0.7, winrate: 0.5, profit: 0.4, avgBet: 0.55 }),
+        getLeaderboard: () =>
+          Promise.resolve({
+            mode: 'profit',
+            window: '7d',
+            top: [
+              { rank: 1, userId: 'u2', name: 'Alice', username: 'alice', profit: 100, bestMultiplier: 20, turnover: 500, loss: 0, rounds: 30, isFriend: false },
+            ],
+            me: { rank: 5, userId: 'u1', name: 'Demo', username: 'demo_player', profit: -20, bestMultiplier: 12.4, turnover: 210, loss: 20, rounds: 42, isFriend: false },
+          }),
+        getReferrals: () =>
+          Promise.resolve({
+            refCode: 'ABC123',
+            refLink: 'https://t.me/demo_bot?start=ABC123',
+            invitedCount: 2,
+            totalEarned: 3.5,
+            ratePercent: 30,
+            refBalance: 1.25,
+            invitees: [],
+          }),
+        getNotificationPrefs: () =>
+          Promise.resolve({
+            deposit_credited: true,
+            withdraw_confirmed: true,
+            withdraw_failed: true,
+            referral_joined: true,
+            referral_earned: true,
+            referral_big_win: false,
+            big_win_self: true,
+            cashback_credited: true,
+            bonus_expiring: true,
+            inactive_48h: false,
+            comeback_7d: false,
+          }),
+        putNotificationPrefs: (prefs) => Promise.resolve(prefs),
+        getDeposit: () =>
+          Promise.resolve({ address: 'EQDemoDepositAddress', comment: 'demo-deposit', note: 'demo note' }),
+        postWithdraw: (amount, address) => {
+          const ticket = { id: 'wd-' + Math.random().toString(16).slice(2, 10), status: 'pending' };
+          withdrawals.unshift({ id: ticket.id, amount, status: ticket.status, address, createdAt: new Date().toISOString() });
+          return Promise.resolve(ticket);
+        },
+        postSupport: (text, theme, files) =>
+          Promise.resolve({ ticketId: 'TK-' + Math.floor(Math.random() * 10000), filesCount: files.length }),
+        postWalletLink: (address) => {
+          walletLinked = address;
+          return Promise.resolve();
+        },
+        getWithdrawals: () => Promise.resolve(withdrawals),
+        getTransactions: () => Promise.resolve({ items: transactions, nextCursor: null }),
+      };
+
+      // ---- Фейковый мост HudWallet — как у scratch-game, свой TonConnect ----
+      const walletListeners = new Set();
+      const fakeWallet = {
+        getAddress: () => walletAddress,
+        connect: () => {
+          walletAddress = 'EQDemoFakeWalletAddress0000000000000000000';
+          for (const cb of walletListeners) cb(walletAddress);
+          return Promise.resolve();
+        },
+        sendDeposit: (to, amountNano, comment) => {
+          console.log('[demo] sendDeposit', { to, amountNano, comment });
+          return Promise.resolve();
+        },
+        subscribe: (onChange) => {
+          walletListeners.add(onChange);
+          return () => walletListeners.delete(onChange);
+        },
+      };
+
+      const config = { botUsername: 'demo_bot', currency: 'GRAM', minBet: 0.1, maxBet: 100 };
+      const root = document.getElementById('hud-root');
+
+      document.getElementById('btn-mount').addEventListener('click', () => {
+        GameHud.mount(root, {
+          adapter: fakeAdapter,
+          config,
+          wallet: fakeWallet,
+          language: 'en',
+          locales: { en: { profile: { title: 'My Demo Cabinet' } } },
+        });
+        console.log('[demo] mounted');
+      });
+      document.getElementById('btn-profile').addEventListener('click', () => GameHud.openProfile());
+      document.getElementById('btn-wallet').addEventListener('click', () => GameHud.openWallet());
+      document.getElementById('btn-history').addEventListener('click', () => GameHud.openHistory());
+      document.getElementById('btn-close').addEventListener('click', () => GameHud.close());
+      document.getElementById('btn-balance').addEventListener('click', () => {
+        const value = Math.round(Math.random() * 10000) / 100;
+        GameHud.setBalance(value);
+        console.log('[demo] setBalance', value);
+      });
+      document.getElementById('btn-lang-ru').addEventListener('click', () => GameHud.setLanguage('ru'));
+      document.getElementById('btn-lang-en').addEventListener('click', () => GameHud.setLanguage('en'));
+      document.getElementById('btn-unmount').addEventListener('click', () => {
+        GameHud.unmount();
+        console.log('[demo] unmounted');
+      });
+    </script>
+  </body>
+</html>

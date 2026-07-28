@@ -13,7 +13,15 @@ export default defineConfig({
     // IDE игры предложит автоимпорт из dist/test/fakeAdapter, который упадёт.
     dts({
       include: ['src'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      // standalone.ts и его заглушка TonConnect не часть публичного ESM API
+      // (`index`/`i18n`) — у них своя сборка в dist/standalone.js через
+      // vite.standalone.config.ts, декларации типов им не нужны.
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/test/**',
+        'src/standalone.ts',
+        'src/wallet/tonconnectHooks.stub.ts',
+      ],
       rollupTypes: false,
     }),
   ],
