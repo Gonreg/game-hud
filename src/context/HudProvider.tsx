@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { HudAdapter, HudConfig } from '../adapter/types';
+import type { HudAdapter, HudConfig, HudWallet } from '../adapter/types';
 
 interface HudContextValue {
   adapter: HudAdapter;
   config: HudConfig;
+  wallet?: HudWallet;
 }
 
 const HudContext = createContext<HudContextValue | null>(null);
@@ -12,13 +13,17 @@ const HudContext = createContext<HudContextValue | null>(null);
 export function HudProvider({
   adapter,
   config,
+  wallet,
   children,
 }: {
   adapter: HudAdapter;
   config: HudConfig;
+  /** Мост к кошельку игры со своим TonConnect. См. `HudWallet`. Не передан —
+   *  библиотека сама работает с TonConnect через React-хуки, как раньше. */
+  wallet?: HudWallet;
   children: ReactNode;
 }) {
-  const value = useMemo(() => ({ adapter, config }), [adapter, config]);
+  const value = useMemo(() => ({ adapter, config, wallet }), [adapter, config, wallet]);
   return (
     <HudContext.Provider value={value}>
       <I18nGuard />
@@ -62,4 +67,10 @@ export function useHudAdapter(): HudAdapter {
 
 export function useHudConfig(): HudConfig {
   return useHudContext().config;
+}
+
+/** Мост к кошельку, если игра его передала. Внутренний доступ для
+ *  `useHudWallet` — экраны сами этот хук не вызывают. */
+export function useHudWalletBridge(): HudWallet | undefined {
+  return useHudContext().wallet;
 }

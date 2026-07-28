@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import { initReactI18next, I18nextProvider } from 'react-i18next';
 import type { ReactElement } from 'react';
 import { HudProvider } from '../context/HudProvider';
-import type { HudAdapter, HudConfig } from '../adapter/types';
+import type { HudAdapter, HudConfig, HudWallet } from '../adapter/types';
 import { makeFakeAdapter } from './fakeAdapter';
 import en from '../i18n/locales/en.json';
 
@@ -17,7 +17,7 @@ const DEFAULT_CONFIG: HudConfig = {
 /** Рендер компонента библиотеки в боевом окружении: i18n + провайдер. */
 export function renderWithHud(
   ui: ReactElement,
-  opts: { adapter?: HudAdapter; config?: Partial<HudConfig> } = {},
+  opts: { adapter?: HudAdapter; config?: Partial<HudConfig>; wallet?: HudWallet } = {},
 ): RenderResult & { adapter: HudAdapter } {
   // Инстанс создаётся на каждый вызов, а не один на модуль: экран выбора языка
   // дёргает changeLanguage, и на модульном синглтоне выбранный язык протёк бы
@@ -34,7 +34,11 @@ export function renderWithHud(
   const adapter = opts.adapter ?? makeFakeAdapter();
   const result = render(
     <I18nextProvider i18n={testI18n}>
-      <HudProvider adapter={adapter} config={{ ...DEFAULT_CONFIG, ...opts.config }}>
+      <HudProvider
+        adapter={adapter}
+        config={{ ...DEFAULT_CONFIG, ...opts.config }}
+        wallet={opts.wallet}
+      >
         {ui}
       </HudProvider>
     </I18nextProvider>,

@@ -38,6 +38,7 @@
     "title": "Portefeuille",
     "tonconnect": "TonConnect",
     "tonconnect_info": "Comment utiliser un portefeuille sur le réseau TON :\n1. Installe une appli de portefeuille — par ex. Tonkeeper ou @wallet dans Telegram.\n2. Crée un portefeuille et conserve ta phrase secrète (24 mots) en lieu sûr — ne la partage jamais.\n3. Approvisionne ton portefeuille en TON (via une plateforme, P2P ou @wallet).\n4. Appuie sur « Connect Wallet », choisis ton portefeuille et confirme la connexion.\n5. C'est fait — tu peux maintenant déposer et retirer.\n\nC'est sûr : la connexion ne nous donne aucun accès à tes fonds — nous voyons seulement l'adresse. Toi seul gères ton argent et confirmes chaque transfert dans ton portefeuille.",
+    "connect": "Connecter le portefeuille",
     "link": "Lier au compte",
     "linked_label": "Portefeuille lié",
     "deposit": "Déposer",

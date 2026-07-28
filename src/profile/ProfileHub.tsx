@@ -1,9 +1,9 @@
 import type { ComponentType, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTonAddress } from '@tonconnect/ui-react';
 import { useHudAdapter } from '../context/HudProvider';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { useHudResource } from '../context/useHudResource';
+import { useHudWallet } from '../wallet/useHudWallet';
 import { fmtAmount } from '../format/money';
 import {
   IconBell,
@@ -30,9 +30,10 @@ export function ProfileHub() {
   const adapter = useHudAdapter();
   const setScreen = useHudStore((s) => s.setScreen);
   const { data: me } = useHudResource('me', (a) => a.getMe());
-  // Кошелёк подключается на клиенте через TonConnect и на бэке не хранится
-  // (me.walletAddress всегда пуст) — читаем живой адрес, как это делает WalletScreen.
-  const walletAddress = useTonAddress();
+  // Кошелёк подключается на клиенте через TonConnect (или мост игры) и на
+  // бэке не хранится (me.walletAddress всегда пуст) — читаем живой адрес,
+  // как это делает WalletScreen.
+  const walletAddress = useHudWallet().address;
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const photo = tgUser?.photo_url;
   const name = me?.tgFirstName || tgUser?.first_name || '?';

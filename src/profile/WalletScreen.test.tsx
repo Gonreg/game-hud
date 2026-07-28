@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WalletScreen } from './WalletScreen';
 import { useHudStore } from '../store/hudStore';
 import { renderWithHud } from '../test/renderWithHud';
-import { makeFakeAdapter } from '../test/fakeAdapter';
+import { makeFakeAdapter, makeFakeWallet } from '../test/fakeAdapter';
 
 vi.mock('@tonconnect/ui-react', () => ({
   useTonAddress: () => 'EQUserWallet',
@@ -113,5 +113,42 @@ describe('WalletScreen', () => {
     await screen.findByPlaceholderText(/amount/i);
     expect(screen.getByRole('button', { name: /withdraw/i })).toBeDisabled();
     expect(screen.getByText('Link a wallet first')).toBeInTheDocument();
+  });
+
+  describe('с мостом', () => {
+    it('адрес берётся из моста, а не из TonConnect', async () => {
+      // Мок '@tonconnect/ui-react' наверху файла всегда отдаёт 'EQUserWallet'
+      // (правда). Мост подключён не подан (адрес null) — вывод должен быть
+      // заблокирован, хотя адаптер не умеет привязку (canWithdraw = Boolean(address)
+      // в этой ветке). Если бы адрес брался из TonConnect, а не из моста, кнопка
+      // осталась бы активной — так тест и отличает источник адреса.
+      const bridge = makeFakeWallet(null);
+      const adapter = makeFakeAdapter(); // без postWalletLink
+      renderWithHud(<WalletScreen />, { adapter, wallet: bridge });
+      await screen.findByPlaceholderText(/amount/i);
+      expect(screen.getByRole('button', { name: /withdraw/i })).toBeDisabled();
+    });
+
+    it('встроенная кнопка TonConnect не рендерится, вместо неё кнопка "Connect wallet"', async () => {
+      const bridge = makeFakeWallet(null);
+      renderWithHud(<WalletScreen />, { wallet: bridge });
+      await screen.findByPlaceholderText(/amount/i);
+      // Мок TonConnectButton рендерит <button>TonConnect</button> — его не
+      // должно быть; card__label "TonConnect" (заголовок карточки) остаётся.
+      expect(screen.queryByRole('button', { name: 'TonConnect' })).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Connect wallet' }));
+      expect(bridge.connect).toHaveBeenCalledTimes(1);
+    });
+
+    it('sendDeposit моста вызывается при пополнении с адресом и суммой из getDeposit()', async () => {
+      const bridge = makeFakeWallet('EQBridgeWallet');
+      const adapter = makeFakeAdapter();
+      renderWithHud(<WalletScreen />, { adapter, wallet: bridge });
+      // Поле суммы предзаполнено «1» — жмём «Deposit» сразу.
+      await userEvent.click(await screen.findByRole('button', { name: /deposit 1 ton/i }));
+      await waitFor(() =>
+        expect(bridge.sendDeposit).toHaveBeenCalledWith('EQTestAddress', '1000000000', 'u1'),
+      );
+    });
   });
 });

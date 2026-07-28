@@ -1,23 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
 import { useHudAdapter } from '../context/HudProvider';
 import { useHudConfig } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { fmtAmount } from '../format/money';
 import { BottomSheet } from '../primitives/BottomSheet';
 import { IconClose, IconTon } from '../primitives/icons';
+import { TonConnectButton } from './tonconnectHooks';
+import { useHudWallet } from './useHudWallet';
 
 const NANO_PER_TON = 1_000_000_000n;
-
-function commentPayload(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  const out = new Uint8Array(4 + bytes.length);
-  out.set(bytes, 4);
-  let bin = '';
-  for (const b of out) bin += String.fromCharCode(b);
-  return btoa(bin);
-}
 
 /**
  * Боттом-шит кошелька (F/components/WalletSheet.tsx), открываемый прямо из
@@ -58,8 +50,8 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
   const { t } = useTranslation();
   const adapter = useHudAdapter();
   const currency = useHudConfig().currency;
-  const [tonConnectUI] = useTonConnectUI();
-  const address = useTonAddress();
+  const wallet = useHudWallet();
+  const address = wallet.address;
   const me = useHudResource('me', (a) => a.getMe());
   const hasWalletLink = typeof adapter.postWalletLink === 'function';
   // Бэк умеет привязку (есть postWalletLink) — значит он и решает, куда выводить,
@@ -75,7 +67,7 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
 
   async function deposit() {
     if (!address) {
-      await tonConnectUI.openModal();
+      await wallet.connect();
       return;
     }
     const ton = Number(amount);
@@ -88,12 +80,7 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
     try {
       const d = await adapter.getDeposit();
       const nano = BigInt(Math.round(ton * Number(NANO_PER_TON)));
-      await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 300,
-        messages: [
-          { address: d.address, amount: nano.toString(), payload: commentPayload(d.comment) },
-        ],
-      });
+      await wallet.sendDeposit(d.address, nano.toString(), d.comment);
       setMsg(t('wallet.deposit_sent'));
     } catch (e) {
       setMsg(t('wallet.error_prefix', { message: (e as Error).message }));
@@ -120,7 +107,7 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
 
   async function withdraw() {
     if (!address) {
-      await tonConnectUI.openModal();
+      await wallet.connect();
       return;
     }
     const ton = Number(withdrawAmount);
@@ -173,7 +160,17 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
           </div>
         ) : (
           <div className="hud-wallet-sheet-link__row">
-            <TonConnectButton />
+            {wallet.showConnectButton ? (
+              <TonConnectButton />
+            ) : (
+              <button
+                type="button"
+                className="hud-wallet-sheet-link-btn"
+                onClick={() => void wallet.connect()}
+              >
+                {t('wallet.connect')}
+              </button>
+            )}
             {hasWalletLink && address && (
               <button
                 type="button"

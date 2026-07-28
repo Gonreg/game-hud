@@ -38,6 +38,7 @@
     "title": "Cartera",
     "tonconnect": "TonConnect",
     "tonconnect_info": "Cómo usar una billetera en la red TON:\n1. Instala una app de billetera — p. ej. Tonkeeper o @wallet en Telegram.\n2. Crea una billetera y guarda tu frase secreta (24 palabras) en un lugar seguro — nunca la compartas.\n3. Recarga tu billetera con monedas TON (mediante un exchange, P2P o @wallet).\n4. Pulsa «Connect Wallet», elige tu billetera y confirma la conexión.\n5. Listo — ya puedes depositar y retirar.\n\nEs seguro: la conexión no nos da acceso a tus fondos — solo vemos la dirección. Solo tú controlas tu dinero y confirmas cada transferencia en tu billetera.",
+    "connect": "Conectar cartera",
     "link": "Vincular a la cuenta",
     "linked_label": "Cartera vinculada",
     "deposit": "Depositar",

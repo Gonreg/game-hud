@@ -39,6 +39,7 @@
     "balance_label": "Account balance",
     "tonconnect": "TonConnect",
     "tonconnect_info": "How to use a wallet on the TON network:\n1. Install a wallet app — e.g. Tonkeeper or @wallet in Telegram.\n2. Create a wallet and store your secret phrase (24 words) somewhere safe — never share it.\n3. Top up your wallet with TON coins (via an exchange, P2P or @wallet).\n4. Tap “Connect Wallet”, pick your wallet and confirm the connection.\n5. Done — now you can deposit and withdraw.\n\nIt's safe: connecting gives us no access to your funds — we only see the address. Only you control the money, and you confirm every transfer yourself in your wallet.",
+    "connect": "Connect wallet",
     "link": "Link to account",
     "linked_label": "Linked wallet",
     "deposit": "Deposit",

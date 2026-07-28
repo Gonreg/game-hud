@@ -1,6 +1,8 @@
+import { vi } from 'vitest';
 import type {
   Deposit,
   GameRound,
+  HudWallet,
   Leaderboard,
   Me,
   NotificationPrefs,
@@ -137,3 +139,33 @@ export const FAKE_ROUND: GameRound = {
   status: 'cashed',
   createdAt: '2026-07-20T09:00:00.000Z',
 };
+
+/**
+ * Фейковый мост (`HudWallet`) для игр со своим TonConnect — например,
+ * scratch-game. `subscribe` запоминает колбэк: `emitAddress` в тесте зовёт
+ * его, имитируя смену адреса в кошельке игры, а возвращённая функция отписки
+ * доступна как `unsubscribe` — проверить, что экран отписался при размонтировании.
+ */
+export function makeFakeWallet(initialAddress: string | null = 'EQBridgeWallet') {
+  let address = initialAddress;
+  let listener: ((address: string | null) => void) | null = null;
+  const unsubscribe = vi.fn();
+  const wallet: HudWallet & {
+    emitAddress: (address: string | null) => void;
+    unsubscribe: typeof unsubscribe;
+  } = {
+    getAddress: vi.fn(() => address),
+    connect: vi.fn(async () => {}),
+    sendDeposit: vi.fn(async () => {}),
+    subscribe: vi.fn((onChange: (address: string | null) => void) => {
+      listener = onChange;
+      return unsubscribe;
+    }),
+    emitAddress(next) {
+      address = next;
+      listener?.(next);
+    },
+    unsubscribe,
+  };
+  return wallet;
+}

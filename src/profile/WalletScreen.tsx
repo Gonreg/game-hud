@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TonConnectButton, useTonAddress, useTonConnectUI } from '@tonconnect/ui-react';
 import { useHudAdapter } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { useHudStore } from '../store/hudStore';
@@ -8,24 +7,17 @@ import { formatWhen } from '../format/datetime';
 import { fmtAmount } from '../format/money';
 import { InfoPopover } from '../primitives/InfoPopover';
 import { Skeleton } from '../primitives/Skeleton';
+import { TonConnectButton } from '../wallet/tonconnectHooks';
+import { useHudWallet } from '../wallet/useHudWallet';
 import type { Withdrawal } from '../adapter/types';
 
 const NANO_PER_TON = 1_000_000_000n;
 
-function commentPayload(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  const out = new Uint8Array(4 + bytes.length);
-  out.set(bytes, 4);
-  let bin = '';
-  for (const b of out) bin += String.fromCharCode(b);
-  return btoa(bin);
-}
-
 export function WalletScreen() {
   const { t, i18n } = useTranslation();
   const adapter = useHudAdapter();
-  const [tonConnectUI] = useTonConnectUI();
-  const address = useTonAddress();
+  const wallet = useHudWallet();
+  const address = wallet.address;
   const me = useHudResource('me', (a) => a.getMe());
   const hasWithdrawalsList = typeof adapter.getWithdrawals === 'function';
   const withdrawals = useHudResource<Withdrawal[]>('withdrawals', (a) =>
@@ -55,7 +47,7 @@ export function WalletScreen() {
 
   async function deposit() {
     if (!address) {
-      await tonConnectUI.openModal();
+      await wallet.connect();
       return;
     }
     const ton = Number(amount);
@@ -68,12 +60,7 @@ export function WalletScreen() {
     try {
       const d = await adapter.getDeposit();
       const nano = BigInt(Math.round(ton * Number(NANO_PER_TON)));
-      await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 300,
-        messages: [
-          { address: d.address, amount: nano.toString(), payload: commentPayload(d.comment) },
-        ],
-      });
+      await wallet.sendDeposit(d.address, nano.toString(), d.comment);
       setMsg(t('wallet.deposit_sent'));
     } catch (e) {
       setMsg(t('wallet.error_prefix', { message: (e as Error).message }));
@@ -104,7 +91,7 @@ export function WalletScreen() {
 
   async function withdraw() {
     if (!address) {
-      await tonConnectUI.openModal();
+      await wallet.connect();
       return;
     }
     const ton = Number(withdrawAmount);
@@ -142,7 +129,17 @@ export function WalletScreen() {
           <InfoPopover text={t('wallet.tonconnect_info')} />
         </div>
         <div style={{ marginTop: 10, display: 'flex', justifyContent: 'center' }}>
-          <TonConnectButton />
+          {wallet.showConnectButton ? (
+            <TonConnectButton />
+          ) : (
+            <button
+              type="button"
+              className="hud-profile-btn"
+              onClick={() => void wallet.connect()}
+            >
+              {t('wallet.connect')}
+            </button>
+          )}
         </div>
         {hasWalletLink && address && !me.data?.walletAddress && (
           <button

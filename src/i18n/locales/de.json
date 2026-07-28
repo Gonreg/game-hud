@@ -38,6 +38,7 @@
     "title": "Wallet",
     "tonconnect": "TonConnect",
     "tonconnect_info": "So nutzt du eine Wallet im TON-Netzwerk:\n1. Installiere eine Wallet-App — z. B. Tonkeeper oder @wallet in Telegram.\n2. Erstelle eine Wallet und bewahre deine geheime Phrase (24 Wörter) sicher auf — teile sie mit niemandem.\n3. Lade deine Wallet mit TON-Coins auf (über eine Börse, P2P oder @wallet).\n4. Tippe auf „Connect Wallet“, wähle deine Wallet und bestätige die Verbindung.\n5. Fertig — jetzt kannst du ein- und auszahlen.\n\nEs ist sicher: Die Verbindung gibt uns keinen Zugriff auf deine Mittel — wir sehen nur die Adresse. Nur du verwaltest dein Geld und bestätigst jede Überweisung selbst in deiner Wallet.",
+    "connect": "Wallet verbinden",
     "link": "Mit Konto verknüpfen",
     "linked_label": "Verknüpfte Wallet",
     "deposit": "Einzahlen",
