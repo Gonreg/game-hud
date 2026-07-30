@@ -85,4 +85,10 @@ describe('NotificationsScreen', () => {
     renderWithHud(<NotificationsScreen />, { adapter: makeFailingAdapter('prefs down') });
     await waitFor(() => expect(screen.getByText(/prefs down/i)).toBeInTheDocument());
   });
+
+  it('без botUsername футер со ссылкой на бота не рендерит', async () => {
+    renderWithHud(<NotificationsScreen />, { config: { botUsername: undefined } });
+    await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(12));
+    expect(screen.queryByText(/notifications arrive in the chat with bot/i)).not.toBeInTheDocument();
+  });
 });

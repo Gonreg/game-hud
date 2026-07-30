@@ -14,9 +14,9 @@ import type {
 
 export const FAKE_ME: Me = {
   id: 'u1',
-  tgId: '1',
-  tgUsername: 'test',
-  tgFirstName: 'Test',
+  displayId: '1',
+  handle: 'test',
+  displayName: 'Test',
   balance: 12.5,
   bonusBalance: 3,
   refBalance: 1.25,

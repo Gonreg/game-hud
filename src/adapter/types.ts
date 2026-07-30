@@ -1,8 +1,15 @@
 export interface Me {
   id: string;
-  tgId: string;
-  tgUsername: string | null;
-  tgFirstName: string | null;
+  /** Идентификатор для отображения в профиле — у Telegram-игр это numeric
+   *  Telegram user id, у игр без Telegram может быть тем же, что и `id`,
+   *  сокращённым адресом кошелька или отсутствовать. Раньше — `tgId`. */
+  displayId: string | null;
+  /** Хэндл без «@», если есть — Telegram username и подобное. Раньше —
+   *  `tgUsername`. */
+  handle: string | null;
+  /** Имя для отображения в профиле — Telegram first name, никнейм и т.п.
+   *  Раньше — `tgFirstName`. */
+  displayName: string | null;
   balance: number;
   bonusBalance: number;
   refBalance: number;
@@ -222,8 +229,10 @@ export interface HudAdapter {
 }
 
 export interface HudConfig {
-  /** Юзернейм бота без «@» — для реф-ссылок и футера уведомлений. */
-  botUsername: string;
+  /** Юзернейм бота без «@» — для футера уведомлений и подсказки в поддержке.
+   *  Нет бота (например, у веб-игр без Telegram) — элементы, которые на него
+   *  ссылаются, просто не рендерятся. */
+  botUsername?: string;
   /** Подпись валюты на экранах: GRAM, TON. */
   currency: string;
   minBet: number;

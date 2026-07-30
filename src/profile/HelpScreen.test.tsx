@@ -44,4 +44,9 @@ describe('HelpScreen', () => {
     await userEvent.click(screen.getByRole('button', { name: /^send$/i }));
     await waitFor(() => expect(useHudStore.getState().helpTheme).toBeNull());
   });
+
+  it('без botUsername подсказку про бота не рендерит', () => {
+    renderWithHud(<HelpScreen />, { config: { botUsername: undefined } });
+    expect(screen.queryByText(/reply will arrive in the chat with bot/i)).not.toBeInTheDocument();
+  });
 });

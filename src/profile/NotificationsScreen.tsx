@@ -107,12 +107,14 @@ export function NotificationsScreen() {
           </label>
         ))}
       </div>
-      <div className="hud-profile-empty" style={{ padding: '16px 4px', textAlign: 'left' }}>
-        {t('notifications.footer_pre')}{' '}
-        <button type="button" className="hud-notif-bot-link" onClick={openBot}>
-          @{botUsername}
-        </button>
-      </div>
+      {botUsername && (
+        <div className="hud-profile-empty" style={{ padding: '16px 4px', textAlign: 'left' }}>
+          {t('notifications.footer_pre')}{' '}
+          <button type="button" className="hud-notif-bot-link" onClick={openBot}>
+            @{botUsername}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

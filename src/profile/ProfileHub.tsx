@@ -36,7 +36,7 @@ export function ProfileHub() {
   const walletAddress = useHudWallet().address;
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const photo = tgUser?.photo_url;
-  const name = me?.tgFirstName || tgUser?.first_name || '?';
+  const name = me?.displayName || tgUser?.first_name || '?';
   const initials = name
     .split(' ')
     .map((p) => p[0])
@@ -85,10 +85,10 @@ export function ProfileHub() {
         </div>
         <div>
           <div className="hud-profile-hub__name">
-            {me?.tgFirstName ?? tgUser?.first_name ?? '...'}
+            {me?.displayName ?? tgUser?.first_name ?? '...'}
           </div>
           <div className="hud-profile-hub__sub">
-            {me?.tgUsername ? `@${me.tgUsername} · ` : ''}ID {me?.tgId ?? '—'}
+            {me?.handle ? `@${me.handle} · ` : ''}ID {me?.displayId ?? '—'}
           </div>
         </div>
       </div>

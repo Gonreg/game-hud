@@ -90,9 +90,11 @@ export function HelpScreen() {
   return (
     <div className="hud-profile-section">
       <div className="hud-profile-card">
-        <div className="hud-profile-empty" style={{ padding: '4px 4px 12px', textAlign: 'left' }}>
-          {t('support.contact_hint', { bot: botUsername })}
-        </div>
+        {botUsername && (
+          <div className="hud-profile-empty" style={{ padding: '4px 4px 12px', textAlign: 'left' }}>
+            {t('support.contact_hint', { bot: botUsername })}
+          </div>
+        )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
           {(['finance', 'game', 'account', 'bug', 'partner', 'other'] as const).map((opt) => (
             <button

@@ -59,6 +59,17 @@ describe('ProfileShell', () => {
     await waitFor(() => expect(adapter.getGameHistory).toHaveBeenCalled());
   });
 
+  it('с переданным renderWallet на экране "wallet" рендерит его, а не встроенный WalletScreen', async () => {
+    useHudStore.setState({ open: true, screen: 'wallet' });
+    renderWithHud(<ProfileShell />, {
+      renderWallet: () => <div data-testid="custom-cashier">My cashier</div>,
+    });
+    await waitFor(() => expect(screen.getByTestId('custom-cashier')).toBeInTheDocument());
+    // Ярлык "TonConnect" — из встроенного WalletScreen; если он отсутствует,
+    // значит библиотека не отрендерила его поверх/вместо переданного экрана.
+    expect(screen.queryByText('TonConnect')).not.toBeInTheDocument();
+  });
+
   it('показывает и прячет Telegram BackButton вместе с оверлеем', () => {
     const show = vi.fn();
     const hide = vi.fn();

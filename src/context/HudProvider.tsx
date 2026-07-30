@@ -6,6 +6,7 @@ interface HudContextValue {
   adapter: HudAdapter;
   config: HudConfig;
   wallet?: HudWallet;
+  renderWallet?: () => ReactNode;
 }
 
 const HudContext = createContext<HudContextValue | null>(null);
@@ -14,6 +15,7 @@ export function HudProvider({
   adapter,
   config,
   wallet,
+  renderWallet,
   children,
 }: {
   adapter: HudAdapter;
@@ -21,9 +23,22 @@ export function HudProvider({
   /** Мост к кошельку игры со своим TonConnect. См. `HudWallet`. Не передан —
    *  библиотека сама работает с TonConnect через React-хуки, как раньше. */
   wallet?: HudWallet;
+  /**
+   * Свой экран кассы вместо библиотечного `WalletScreen`. Передан — кабинет
+   * (`ProfileShell`) на экране `wallet` рендерит его вместо `WalletScreen`
+   * (не трогая при этом ни стор, ни точки входа: баланс-чип, пункт меню и
+   * обе кнопки быстрого доступа продолжают просто открывать экран `wallet`
+   * как раньше). Игре с собственным кошельком (например, Phantom/Solflare
+   * на Solana) больше не нужно патчить внутренний стор, чтобы перехватить
+   * эти точки входа.
+   */
+  renderWallet?: () => ReactNode;
   children: ReactNode;
 }) {
-  const value = useMemo(() => ({ adapter, config, wallet }), [adapter, config, wallet]);
+  const value = useMemo(
+    () => ({ adapter, config, wallet, renderWallet }),
+    [adapter, config, wallet, renderWallet],
+  );
   return (
     <HudContext.Provider value={value}>
       <I18nGuard />
@@ -73,4 +88,10 @@ export function useHudConfig(): HudConfig {
  *  `useHudWallet` — экраны сами этот хук не вызывают. */
 export function useHudWalletBridge(): HudWallet | undefined {
   return useHudContext().wallet;
+}
+
+/** Свой экран кассы, если игра его передала. Внутренний доступ для
+ *  `ProfileShell` — остальной код этот хук не вызывает. */
+export function useHudRenderWallet(): (() => ReactNode) | undefined {
+  return useHudContext().renderWallet;
 }

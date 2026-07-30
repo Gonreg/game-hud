@@ -1,6 +1,6 @@
 {
   "name": "@gonreg/game-hud",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "type": "module",
   "files": [
     "dist"
@@ -10,6 +10,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./walletless": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/walletless.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
@@ -17,8 +21,9 @@
     }
   },
   "scripts": {
-    "build": "vite build && node -e \"require('node:fs').copyFileSync('src/theme/styles.css','dist/styles.css')\" && npm run build:standalone",
+    "build": "vite build && node -e \"require('node:fs').copyFileSync('src/theme/styles.css','dist/styles.css')\" && npm run build:standalone && npm run build:walletless",
     "build:standalone": "vite build --config vite.standalone.config.ts",
+    "build:walletless": "vite build --config vite.walletless.config.ts",
     "dev": "vite --open /demo/index.html",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -34,6 +39,11 @@
     "react-dom": "^18.3.1",
     "react-i18next": "^15.0.0",
     "zustand": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tonconnect/ui-react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

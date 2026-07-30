@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHudAdapter } from '../context/HudProvider';
+import { useHudAdapter, useHudRenderWallet } from '../context/HudProvider';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { ProfileHub } from './ProfileHub';
 import { WalletScreen } from './WalletScreen';
@@ -36,6 +36,7 @@ const LEGAL_SCREENS = new Set<HudScreen>(['terms', 'privacy', 'offer']);
 export function ProfileShell() {
   const { t } = useTranslation();
   const adapter = useHudAdapter();
+  const renderWallet = useHudRenderWallet();
   const { open, screen, close, setScreen } = useHudStore();
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export function ProfileShell() {
       <div className="hud-profile-body">
         <div className="hud-profile-screen" key={screen}>
           {screen === 'hub' && <ProfileHub />}
-          {screen === 'wallet' && <WalletScreen />}
+          {screen === 'wallet' && (renderWallet ? renderWallet() : <WalletScreen />)}
           {screen === 'history' &&
             (typeof adapter.getTransactions === 'function' ? (
               <HistoryScreen />
