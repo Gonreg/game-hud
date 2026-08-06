@@ -44,6 +44,27 @@ import { HudProvider, ProfileShell } from '@gonreg/game-hud/walletless';
 </HudProvider>
 ```
 
+## Выбор языка в настройках
+
+Меню шестерёнки (`SettingsMenu`, `SoundSettings`) последним пунктом показывает
+выбор языка: свёрнутая строка с текущим языком, по тапу — список десяти локалей
+названиями на самих языках. Игре передавать для этого ничего не надо, довольно
+обновить версию библиотеки. Игре со своим меню настроек тот же пункт доступен
+отдельным экспортом:
+
+```tsx
+import { LanguagePicker } from '@gonreg/game-hud';
+```
+
+Выбор применяется сразу (`i18n.changeLanguage`, `lang`/`dir` на `<html>`) и
+пишется в `localStorage`. Ключ по умолчанию — `i18nextLng`, как у
+`i18next-browser-languagedetector`. Игра, которая читает язык из своего ключа,
+называет его в конфиге, иначе выбор не переживёт перезапуск:
+
+```tsx
+<HudProvider config={{ ...config, languageStorageKey: 'tolstyak.lang' }}>
+```
+
 ## Миграция на 1.0
 
 Версия 1.0 убирает Telegram-специфичные поля из публичного API, чтобы

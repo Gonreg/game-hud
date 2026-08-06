@@ -15,4 +15,11 @@ describe('LanguageScreen', () => {
     await userEvent.click(screen.getByText(/Русский/i));
     expect(document.documentElement.lang).toBe('ru');
   });
+
+  it('запоминает выбор между сессиями — тем же ключом, что и меню настроек', async () => {
+    localStorage.clear();
+    renderWithHud(<LanguageScreen />, { config: { languageStorageKey: 'molot.lang' } });
+    await userEvent.click(screen.getByText(/Deutsch/i));
+    expect(localStorage.getItem('molot.lang')).toBe('de');
+  });
 });

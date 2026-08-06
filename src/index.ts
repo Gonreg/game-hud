@@ -13,6 +13,9 @@ export { ProfileAvatarButton } from './hud/ProfileAvatarButton';
 export { SettingsButton } from './hud/SettingsButton';
 export { SettingsMenu } from './hud/SettingsMenu';
 export { SoundSettings } from './hud/SoundSettings';
+// Выбор языка отдельным экспортом — игре со своим меню настроек (а не
+// библиотечным SettingsMenu/SoundSettings) есть куда его поставить.
+export { LanguagePicker } from './hud/LanguagePicker';
 
 export { BetAmountInput } from './bet/BetAmountInput';
 export {

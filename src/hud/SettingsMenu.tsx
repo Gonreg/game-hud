@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
+import { LanguagePicker } from './LanguagePicker';
 
 /**
  * Содержимое выпадающего меню шестерёнки (M/game/SettingsSheet.tsx), без
  * подборщика треков — список треков знает только звуковой движок игры, а его
  * у библиотеки нет. Строки Music/SFX/How to play — неймспейс `sound` словаря
  * библиотеки (панель звука переехала в библиотеку на Task 19, вместе с ней и
- * подписи).
+ * подписи). Внизу — общий для всех игр выбор языка.
  */
 export function SettingsMenu({
   onHowToPlay,
@@ -88,6 +89,7 @@ export function SettingsMenu({
         </span>
         <span className="hud-fm-sml">{t('sound.how')}</span>
       </button>
+      <LanguagePicker />
     </div>
   );
 }

@@ -237,6 +237,18 @@ export interface HudConfig {
   currency: string;
   minBet: number;
   maxBet: number;
+  /**
+   * Ключ localStorage, в который переключатель языка кладёт выбор игрока.
+   * По умолчанию `i18nextLng` — ключ i18next-browser-languagedetector,
+   * которым игра его и прочитает на следующем запуске.
+   *
+   * Игра, которая читает язык из своего ключа (у fatman это `tolstyak.lang`
+   * в `detection.lookupLocalStorage`, у molot — `molot.lang` в собственном
+   * детекторе без i18next-плагина), передаёт его сюда: иначе библиотека
+   * запишет выбор в ключ, который никто не читает, и после перезапуска игра
+   * снова определит язык сама.
+   */
+  languageStorageKey?: string;
 }
 
 /**

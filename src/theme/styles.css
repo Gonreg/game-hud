@@ -722,6 +722,13 @@
 .hud-fm-smtrack { flex: 1; padding: 6px 4px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9px; color: rgba(255, 255, 255, 0.6); font-family: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .hud-fm-smtrack:active { background: rgba(255, 255, 255, 0.1); }
 .hud-fm-smtrack.hud-on { color: #fff; background: rgba(160, 107, 255, 0.24); border-color: rgba(160, 107, 255, 0.6); }
+/* Выбор языка внизу меню: текущий язык справа в свёрнутой строке, список —
+   в две колонки (десять языков в один столбец в меню не влезают). */
+.hud-fm-smcur { font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.55); }
+.hud-fm-smlangs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 2px 8px 6px; max-height: 176px; overflow-y: auto; }
+.hud-fm-smlang { display: flex; align-items: center; gap: 5px; padding: 6px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9px; color: rgba(255, 255, 255, 0.6); font-family: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; text-align: left; }
+.hud-fm-smlang:active { background: rgba(255, 255, 255, 0.1); }
+.hud-fm-smlang.hud-on { color: #fff; background: rgba(160, 107, 255, 0.24); border-color: rgba(160, 107, 255, 0.6); }
 .hud-balance-chip svg { flex: 0 0 auto; display: block; }
 
 /* ─── Wallet bottom-sheet ─────────────────────────────────────────────── */

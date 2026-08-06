@@ -84,6 +84,17 @@ export function useHudConfig(): HudConfig {
   return useHudContext().config;
 }
 
+/**
+ * Конфиг, если провайдер вообще есть в дереве. Внутренний доступ для
+ * переключателя языка: он живёт в меню шестерёнки, а её игра вправе
+ * отрендерить и вне `HudProvider` (до этой задачи `SettingsMenu` и
+ * `SoundSettings` провайдера не требовали) — тогда берём ключ хранения по
+ * умолчанию вместо того, чтобы уронить игровой экран.
+ */
+export function useHudConfigOptional(): HudConfig | undefined {
+  return useContext(HudContext)?.config;
+}
+
 /** Мост к кошельку, если игра его передала. Внутренний доступ для
  *  `useHudWallet` — экраны сами этот хук не вызывают. */
 export function useHudWalletBridge(): HudWallet | undefined {

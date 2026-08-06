@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LanguagePicker } from './LanguagePicker';
 
 /**
  * Копия F/components/SoundSettings.tsx: своя плавающая шестерёнка (левее
@@ -8,7 +9,8 @@ import { useTranslation } from 'react-i18next';
  * звуком и списком треков управляет игра. Строки Music/SFX/Sound/on/off —
  * неймспейс `sound` словаря библиотеки (панель звука переехала в библиотеку
  * на Task 19, вместе с ней и подписи); названия треков и «как играть» —
- * пропсами, чтобы не терять фичи fatman (Task 25) и matreshka.
+ * пропсами, чтобы не терять фичи fatman (Task 25) и matreshka. Внизу меню —
+ * общий для всех игр выбор языка, как и в меню обычной шестерёнки.
  */
 export function SoundSettings({
   musicOn,
@@ -143,6 +145,7 @@ export function SoundSettings({
               <span className="hud-fm-sml">{t('sound.how')}</span>
             </button>
           )}
+          <LanguagePicker />
         </div>
       )}
     </div>
