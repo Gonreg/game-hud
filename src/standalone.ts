@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { HudProvider } from './context/HudProvider';
 import { ProfileShell } from './profile/ProfileShell';
 import { WalletSheet } from './wallet/WalletSheet';
+import { SettingsMenu } from './hud/SettingsMenu';
 import { useHudStore } from './store/hudStore';
 import { hudLocales, mergeHudLocales, RTL_LANGUAGES, SUPPORTED_LANGUAGES } from './i18n';
 import type { HudAdapter, HudConfig, HudWallet } from './adapter/types';
@@ -209,4 +210,41 @@ export function setLanguage(lang: string): void {
   if (!currentI18n) return;
   void currentI18n.changeLanguage(lang);
   applyDocumentLanguage(lang);
+}
+
+export interface SettingsMenuOptions {
+  onHowToPlay: () => void;
+  musicOn?: boolean;
+  sfxOn?: boolean;
+  onToggleMusic?: () => void;
+  onToggleSfx?: () => void;
+}
+
+let settingsRoot: Root | null = null;
+
+/**
+ * Монтирует содержимое выпадающего меню шестерёнки (Music/SFX/How to play/
+ * Language — см. `SettingsMenu`) в переданный узел, для игр без сборщика со
+ * своей кнопкой-шестерёнкой в топбаре (scratch-game — единственная такая на
+ * сегодня). Подборщик треков сюда не входит (см. комментарий в SettingsMenu):
+ * список треков знает только звуковой движок игры, рисует его сама игра
+ * рядом с этим меню, как и остальные пять игр делают у себя.
+ *
+ * Требует, чтобы `mount()` уже был вызван — меню рендерится в ТОМ ЖЕ
+ * i18n-инстансе, что и кабинет, иначе смена языка тут не подхватилась бы в
+ * профиле (и наоборот) до следующего mount()/setLanguage().
+ */
+export function mountSettingsMenu(el: HTMLElement, opts: SettingsMenuOptions): void {
+  if (!currentI18n) {
+    throw new Error('mountSettingsMenu: call mount() first (needs the cabinet i18n instance)');
+  }
+  injectStyles();
+  if (settingsRoot) settingsRoot.unmount();
+  settingsRoot = createRoot(el);
+  settingsRoot.render(createElement(I18nextProvider, { i18n: currentI18n, children: createElement(SettingsMenu, opts) }));
+}
+
+export function unmountSettingsMenu(): void {
+  settingsRoot?.unmount();
+  settingsRoot = null;
 }

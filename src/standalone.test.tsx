@@ -139,3 +139,78 @@ describe('standalone GameHud.mount', () => {
     await userEvent.click(screen.getByText('Connect wallet'));
   });
 });
+
+describe('standalone GameHud.mountSettingsMenu', () => {
+  let settingsContainer: HTMLDivElement;
+
+  beforeEach(() => {
+    settingsContainer = document.createElement('div');
+    document.body.appendChild(settingsContainer);
+  });
+
+  afterEach(() => {
+    act(() => {
+      GameHud.unmountSettingsMenu();
+    });
+    settingsContainer.remove();
+  });
+
+  it('без mount() бросает — меню не может жить без i18n-инстанса кабинета', () => {
+    expect(() => GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() })).toThrow();
+  });
+
+  it('после mount() рендерит Music/SFX/How to play/Language теми же пропсами, что и SettingsMenu', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+    });
+    const onHowToPlay = vi.fn();
+    const onToggleMusic = vi.fn();
+    const onToggleSfx = vi.fn();
+    act(() => {
+      GameHud.mountSettingsMenu(settingsContainer, {
+        onHowToPlay,
+        musicOn: true,
+        sfxOn: false,
+        onToggleMusic,
+        onToggleSfx,
+      });
+    });
+    await waitFor(() => expect(screen.getByText('How to play')).toBeInTheDocument());
+    expect(screen.getByText('Music')).toBeInTheDocument();
+    expect(screen.getByText('Game sounds')).toBeInTheDocument();
+    expect(screen.getByText('Language')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText('How to play'));
+    expect(onHowToPlay).toHaveBeenCalledOnce();
+    await userEvent.click(screen.getByText('Music'));
+    expect(onToggleMusic).toHaveBeenCalledOnce();
+    await userEvent.click(screen.getByText('Game sounds'));
+    expect(onToggleSfx).toHaveBeenCalledOnce();
+  });
+
+  it('делит i18n-инстанс с кабинетом — смена языка в кабинете видна и в меню', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet(), language: 'en' });
+      GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() });
+    });
+    await waitFor(() => expect(screen.getByText('Language')).toBeInTheDocument());
+
+    act(() => {
+      GameHud.setLanguage('ru');
+    });
+    await waitFor(() => expect(screen.getByText('Язык')).toBeInTheDocument());
+  });
+
+  it('unmountSettingsMenu() размонтирует дерево из переданного узла', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() });
+    });
+    await waitFor(() => expect(settingsContainer.querySelector('.hud-fm-setmenu')).toBeInTheDocument());
+
+    act(() => {
+      GameHud.unmountSettingsMenu();
+    });
+    expect(settingsContainer.querySelector('.hud-fm-setmenu')).not.toBeInTheDocument();
+  });
+});
