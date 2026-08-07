@@ -140,7 +140,7 @@ describe('standalone GameHud.mount', () => {
   });
 });
 
-describe('standalone GameHud.mountSettingsMenu', () => {
+describe('standalone GameHud.mountSoundSettings', () => {
   let settingsContainer: HTMLDivElement;
 
   beforeEach(() => {
@@ -150,35 +150,51 @@ describe('standalone GameHud.mountSettingsMenu', () => {
 
   afterEach(() => {
     act(() => {
-      GameHud.unmountSettingsMenu();
+      GameHud.unmountSoundSettings();
     });
     settingsContainer.remove();
   });
 
   it('без mount() бросает — меню не может жить без i18n-инстанса кабинета', () => {
-    expect(() => GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() })).toThrow();
+    expect(() =>
+      GameHud.mountSoundSettings(settingsContainer, {
+        musicOn: true,
+        sfxOn: true,
+        onToggleMusic: vi.fn(),
+        onToggleSfx: vi.fn(),
+      }),
+    ).toThrow();
   });
 
-  it('после mount() рендерит Music/SFX/How to play/Language теми же пропсами, что и SettingsMenu', async () => {
+  it('после mount() рендерит шестерёнку, а по клику — Music/SFX/треки/How to play/Language', async () => {
     act(() => {
       GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
     });
     const onHowToPlay = vi.fn();
     const onToggleMusic = vi.fn();
     const onToggleSfx = vi.fn();
+    const onSelectTrack = vi.fn();
     act(() => {
-      GameHud.mountSettingsMenu(settingsContainer, {
+      GameHud.mountSoundSettings(settingsContainer, {
         onHowToPlay,
         musicOn: true,
         sfxOn: false,
         onToggleMusic,
         onToggleSfx,
+        tracks: [{ id: 'calm', label: 'Спокойная' }, { id: 'exciting', label: 'Азартная' }],
+        currentTrack: 'exciting',
+        onSelectTrack,
       });
     });
+    expect(screen.queryByText('How to play')).not.toBeInTheDocument();
+    await userEvent.click(settingsContainer.querySelector('.hud-fm-gear')!);
+
     await waitFor(() => expect(screen.getByText('How to play')).toBeInTheDocument());
     expect(screen.getByText('Music')).toBeInTheDocument();
     expect(screen.getByText('Game sounds')).toBeInTheDocument();
     expect(screen.getByText('Language')).toBeInTheDocument();
+    expect(screen.getByText('Спокойная')).toBeInTheDocument();
+    expect(screen.getByText('Азартная')).toBeInTheDocument();
 
     await userEvent.click(screen.getByText('How to play'));
     expect(onHowToPlay).toHaveBeenCalledOnce();
@@ -186,13 +202,21 @@ describe('standalone GameHud.mountSettingsMenu', () => {
     expect(onToggleMusic).toHaveBeenCalledOnce();
     await userEvent.click(screen.getByText('Game sounds'));
     expect(onToggleSfx).toHaveBeenCalledOnce();
+    await userEvent.click(screen.getByText('Спокойная'));
+    expect(onSelectTrack).toHaveBeenCalledWith('calm');
   });
 
   it('делит i18n-инстанс с кабинетом — смена языка в кабинете видна и в меню', async () => {
     act(() => {
       GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet(), language: 'en' });
-      GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() });
+      GameHud.mountSoundSettings(settingsContainer, {
+        musicOn: true,
+        sfxOn: true,
+        onToggleMusic: vi.fn(),
+        onToggleSfx: vi.fn(),
+      });
     });
+    await userEvent.click(settingsContainer.querySelector('.hud-fm-gear')!);
     await waitFor(() => expect(screen.getByText('Language')).toBeInTheDocument());
 
     act(() => {
@@ -201,16 +225,21 @@ describe('standalone GameHud.mountSettingsMenu', () => {
     await waitFor(() => expect(screen.getByText('Язык')).toBeInTheDocument());
   });
 
-  it('unmountSettingsMenu() размонтирует дерево из переданного узла', async () => {
+  it('unmountSoundSettings() размонтирует дерево из переданного узла', () => {
     act(() => {
       GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
-      GameHud.mountSettingsMenu(settingsContainer, { onHowToPlay: vi.fn() });
+      GameHud.mountSoundSettings(settingsContainer, {
+        musicOn: true,
+        sfxOn: true,
+        onToggleMusic: vi.fn(),
+        onToggleSfx: vi.fn(),
+      });
     });
-    await waitFor(() => expect(settingsContainer.querySelector('.hud-fm-setmenu')).toBeInTheDocument());
+    expect(settingsContainer.querySelector('.hud-fm-gear')).toBeInTheDocument();
 
     act(() => {
-      GameHud.unmountSettingsMenu();
+      GameHud.unmountSoundSettings();
     });
-    expect(settingsContainer.querySelector('.hud-fm-setmenu')).not.toBeInTheDocument();
+    expect(settingsContainer.querySelector('.hud-fm-gear')).not.toBeInTheDocument();
   });
 });

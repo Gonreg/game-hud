@@ -6,7 +6,7 @@ import { create } from 'zustand';
 import { HudProvider } from './context/HudProvider';
 import { ProfileShell } from './profile/ProfileShell';
 import { WalletSheet } from './wallet/WalletSheet';
-import { SettingsMenu } from './hud/SettingsMenu';
+import { SoundSettings } from './hud/SoundSettings';
 import { useHudStore } from './store/hudStore';
 import { hudLocales, mergeHudLocales, RTL_LANGUAGES, SUPPORTED_LANGUAGES } from './i18n';
 import type { HudAdapter, HudConfig, HudWallet } from './adapter/types';
@@ -212,39 +212,45 @@ export function setLanguage(lang: string): void {
   applyDocumentLanguage(lang);
 }
 
-export interface SettingsMenuOptions {
-  onHowToPlay: () => void;
-  musicOn?: boolean;
-  sfxOn?: boolean;
-  onToggleMusic?: () => void;
-  onToggleSfx?: () => void;
+export interface SoundSettingsOptions {
+  musicOn: boolean;
+  sfxOn: boolean;
+  onToggleMusic: () => void;
+  onToggleSfx: () => void;
+  /** Названия треков — свои у каждой игры. Без них блок подборщика скрыт. */
+  tracks?: Array<{ id: string; label: string }>;
+  currentTrack?: string;
+  onSelectTrack?: (id: string) => void;
+  onHowToPlay?: () => void;
 }
 
-let settingsRoot: Root | null = null;
+let soundSettingsRoot: Root | null = null;
 
 /**
- * Монтирует содержимое выпадающего меню шестерёнки (Music/SFX/How to play/
- * Language — см. `SettingsMenu`) в переданный узел, для игр без сборщика со
- * своей кнопкой-шестерёнкой в топбаре (scratch-game — единственная такая на
- * сегодня). Подборщик треков сюда не входит (см. комментарий в SettingsMenu):
- * список треков знает только звуковой движок игры, рисует его сама игра
- * рядом с этим меню, как и остальные пять игр делают у себя.
+ * Монтирует ПОЛНЫЙ блок звука/языка — свою плавающую шестерёнку с выпадающим
+ * меню Music (+ подборщик треков) / SFX / «как играть» / язык (см.
+ * `SoundSettings` — тот же компонент рендерят баш/матрёшка/джуб) — в
+ * переданный узел. Для игр без сборщика со своей кнопкой-шестерёнкой в
+ * топбаре (scratch-game — единственная такая на сегодня): их собственную
+ * кнопку эта функция заменяет целиком, а не дополняет — иначе на экране
+ * было бы две шестерёнки. Аудио-движка у библиотеки как и раньше нет: звук,
+ * список треков и их состояние передаёт сама игра пропсами.
  *
  * Требует, чтобы `mount()` уже был вызван — меню рендерится в ТОМ ЖЕ
  * i18n-инстансе, что и кабинет, иначе смена языка тут не подхватилась бы в
  * профиле (и наоборот) до следующего mount()/setLanguage().
  */
-export function mountSettingsMenu(el: HTMLElement, opts: SettingsMenuOptions): void {
+export function mountSoundSettings(el: HTMLElement, opts: SoundSettingsOptions): void {
   if (!currentI18n) {
-    throw new Error('mountSettingsMenu: call mount() first (needs the cabinet i18n instance)');
+    throw new Error('mountSoundSettings: call mount() first (needs the cabinet i18n instance)');
   }
   injectStyles();
-  if (settingsRoot) settingsRoot.unmount();
-  settingsRoot = createRoot(el);
-  settingsRoot.render(createElement(I18nextProvider, { i18n: currentI18n, children: createElement(SettingsMenu, opts) }));
+  if (soundSettingsRoot) soundSettingsRoot.unmount();
+  soundSettingsRoot = createRoot(el);
+  soundSettingsRoot.render(createElement(I18nextProvider, { i18n: currentI18n, children: createElement(SoundSettings, opts) }));
 }
 
-export function unmountSettingsMenu(): void {
-  settingsRoot?.unmount();
-  settingsRoot = null;
+export function unmountSoundSettings(): void {
+  soundSettingsRoot?.unmount();
+  soundSettingsRoot = null;
 }
