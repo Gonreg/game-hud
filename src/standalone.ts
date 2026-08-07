@@ -225,6 +225,7 @@ export interface SoundSettingsOptions {
 }
 
 let soundSettingsRoot: Root | null = null;
+let soundSettingsEl: HTMLElement | null = null;
 
 /**
  * Монтирует ПОЛНЫЙ блок звука/языка — свою плавающую шестерёнку с выпадающим
@@ -234,7 +235,13 @@ let soundSettingsRoot: Root | null = null;
  * топбаре (scratch-game — единственная такая на сегодня): их собственную
  * кнопку эта функция заменяет целиком, а не дополняет — иначе на экране
  * было бы две шестерёнки. Аудио-движка у библиотеки как и раньше нет: звук,
- * список треков и их состояние передаёт сама игра пропсами.
+ * список треков и их состояние передаёт сама игра пропсами — а значит, в
+ * отличие от mount(), этот вызов повторяется на каждое изменение состояния
+ * (тумблер музыки/SFX, смена трека). Пересоздавать root на каждый такой вызов
+ * было бы неверно: unmount()+createRoot() сбрасывает внутренний useState
+ * компонента (открыто ли меню), и оно захлопывалось бы сразу после любого
+ * клика внутри. Поэтому root переживает повторные вызовы на тот же узел —
+ * пересоздаётся только при первом вызове или смене el.
  *
  * Требует, чтобы `mount()` уже был вызван — меню рендерится в ТОМ ЖЕ
  * i18n-инстансе, что и кабинет, иначе смена языка тут не подхватилась бы в
@@ -245,12 +252,16 @@ export function mountSoundSettings(el: HTMLElement, opts: SoundSettingsOptions):
     throw new Error('mountSoundSettings: call mount() first (needs the cabinet i18n instance)');
   }
   injectStyles();
-  if (soundSettingsRoot) soundSettingsRoot.unmount();
-  soundSettingsRoot = createRoot(el);
+  if (!soundSettingsRoot || soundSettingsEl !== el) {
+    if (soundSettingsRoot) soundSettingsRoot.unmount();
+    soundSettingsRoot = createRoot(el);
+    soundSettingsEl = el;
+  }
   soundSettingsRoot.render(createElement(I18nextProvider, { i18n: currentI18n, children: createElement(SoundSettings, opts) }));
 }
 
 export function unmountSoundSettings(): void {
   soundSettingsRoot?.unmount();
   soundSettingsRoot = null;
+  soundSettingsEl = null;
 }

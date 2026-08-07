@@ -225,6 +225,39 @@ describe('standalone GameHud.mountSoundSettings', () => {
     await waitFor(() => expect(screen.getByText('Язык')).toBeInTheDocument());
   });
 
+  it('повторный mountSoundSettings() на том же узле обновляет пропы, не закрывая уже открытое меню', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.mountSoundSettings(settingsContainer, {
+        musicOn: true,
+        sfxOn: true,
+        onToggleMusic: vi.fn(),
+        onToggleSfx: vi.fn(),
+      });
+    });
+    await userEvent.click(settingsContainer.querySelector('.hud-fm-gear')!);
+    await waitFor(() => expect(screen.getByText('Music')).toBeInTheDocument());
+
+    // Второй вызов (как после тумблера SFX хостом-игрой) — тот же узел, новые
+    // пропы. Хост зовёт mountSoundSettings на каждое изменение состояния
+    // (у mountSoundSettings нет колбэка вроде onChange, обновление — только
+    // так), поэтому пересоздание root на каждый вызов схлопывало бы открытое
+    // меню — регрессия, которую этот тест и защищает.
+    act(() => {
+      GameHud.mountSoundSettings(settingsContainer, {
+        musicOn: true,
+        sfxOn: false,
+        onToggleMusic: vi.fn(),
+        onToggleSfx: vi.fn(),
+      });
+    });
+
+    expect(screen.getByText('Music')).toBeInTheDocument();
+    expect(screen.getByText('Game sounds')).toBeInTheDocument();
+    var sfxRow = screen.getByText('Game sounds').closest('.hud-fm-smitem')!;
+    expect(sfxRow.querySelector('.hud-fm-sms')).toHaveTextContent('off');
+  });
+
   it('unmountSoundSettings() размонтирует дерево из переданного узла', () => {
     act(() => {
       GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
