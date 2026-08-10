@@ -1,5 +1,13 @@
 import '@testing-library/jest-dom/vitest';
 
+// jsdom не реализует scrollIntoView вовсе (это отсутствующий метод, а не пустая
+// заглушка), а WalletScreen зовёт его при открытии — без этого любой тест,
+// доходящий до экрана кошелька, падает на «not a function» вместо проверки
+// самого экрана.
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
 /** Подписчики Telegram-событий: тесты эмитят через emitTelegramEvent. */
 const tgListeners = new Map<string, Set<() => void>>();
 

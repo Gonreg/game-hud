@@ -140,6 +140,98 @@ describe('standalone GameHud.mount', () => {
   });
 });
 
+describe('standalone GameHud.mountTopBar', () => {
+  let barContainer: HTMLDivElement;
+
+  beforeEach(() => {
+    barContainer = document.createElement('div');
+    document.body.appendChild(barContainer);
+  });
+
+  afterEach(() => {
+    act(() => {
+      GameHud.unmountTopBar();
+    });
+    barContainer.remove();
+  });
+
+  it('без mount() бросает — шапке нужны адаптер и i18n кабинета', () => {
+    expect(() => GameHud.mountTopBar(barContainer)).toThrow();
+  });
+
+  // Ради этого всё и делается: у игр со сборщиком баланс и аватар ставит сама
+  // игра, а у scratch-game своего React нет — шапку целиком отдаёт библиотека,
+  // и выглядеть она обязана так же, как у остальных пяти.
+  it('после mount() рисует баланс и аватар', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.setBalance(12.5);
+      GameHud.mountTopBar(barContainer);
+    });
+    await waitFor(() => expect(barContainer.querySelector('.hud-balance-chip')).toBeInTheDocument());
+    expect(barContainer.querySelector('.hud-profile-avatar-chip')).toBeInTheDocument();
+    expect(barContainer).toHaveTextContent('12.50');
+  });
+
+  it('баланс реактивен: setBalance() перерисовывает чип', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.mountTopBar(barContainer);
+      GameHud.setBalance(1);
+    });
+    await waitFor(() => expect(barContainer).toHaveTextContent('1.00'));
+    act(() => {
+      GameHud.setBalance(777.25);
+    });
+    await waitFor(() => expect(barContainer).toHaveTextContent('777.25'));
+  });
+
+  it('тап по аватару открывает кабинет, тап по балансу — кошелёк', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.mountTopBar(barContainer);
+    });
+    await userEvent.click(barContainer.querySelector('.hud-profile-avatar-chip')!);
+    await waitFor(() => expect(screen.getByText('Profile')).toBeInTheDocument());
+
+    act(() => {
+      GameHud.close();
+    });
+    await userEvent.click(barContainer.querySelector('.hud-balance-chip')!);
+    await waitFor(() => expect(screen.getByText('Wallet')).toBeInTheDocument());
+  });
+
+  it('unmountTopBar() очищает узел', () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+      GameHud.mountTopBar(barContainer);
+    });
+    expect(barContainer.querySelector('.hud-balance-chip')).toBeInTheDocument();
+    act(() => {
+      GameHud.unmountTopBar();
+    });
+    expect(barContainer.innerHTML).toBe('');
+  });
+});
+
+// Позиционирование ВСЕГО худа (баланс, аватар, шестерёнка) в CSS завязано на
+// --hud-safe-*: `top: calc(max(var(--hud-safe-top), 78px) + 16px)`. Если
+// переменная не выставлена, calc целиком невалиден и элемент уезжает в угол —
+// ровно это и было у scratch-game, единственной игры без своего React, где
+// вызвать useTelegramSafeArea() некому.
+describe('standalone mount() выставляет safe-area переменные', () => {
+  it('после mount() --hud-safe-* заданы на <html>', async () => {
+    act(() => {
+      GameHud.mount(container, { adapter: makeFakeAdapter(), config: CONFIG, wallet: makeFakeWallet() });
+    });
+    await waitFor(() => {
+      for (const side of ['top', 'right', 'bottom', 'left']) {
+        expect(document.documentElement.style.getPropertyValue(`--hud-safe-${side}`)).not.toBe('');
+      }
+    });
+  });
+});
+
 describe('standalone GameHud.mountSoundSettings', () => {
   let settingsContainer: HTMLDivElement;
 

@@ -7,6 +7,10 @@ import { HudProvider } from './context/HudProvider';
 import { ProfileShell } from './profile/ProfileShell';
 import { WalletSheet } from './wallet/WalletSheet';
 import { SoundSettings } from './hud/SoundSettings';
+import { BalanceChip } from './hud/BalanceChip';
+import { ProfileAvatarButton } from './hud/ProfileAvatarButton';
+import { IconTon } from './primitives/icons';
+import { useTelegramSafeArea } from './theme/useTelegramSafeArea';
 import { useHudStore } from './store/hudStore';
 import { hudLocales, mergeHudLocales, RTL_LANGUAGES, SUPPORTED_LANGUAGES } from './i18n';
 import type { HudAdapter, HudConfig, HudWallet } from './adapter/types';
@@ -110,6 +114,12 @@ function StandaloneApp({
   const balance = useStandaloneStore((s) => s.balance);
   const walletSheetOpen = useStandaloneStore((s) => s.walletSheetOpen);
   const closeWalletSheet = useStandaloneStore((s) => s.closeWalletSheet);
+  // Пять игр со сборщиком зовут этот хук у себя в App; у scratch-game своего
+  // React нет, поэтому зовём здесь. Без него --hud-safe-* не выставлены, а на
+  // них завязано позиционирование ВСЕГО худа: `top: calc(max(var(--hud-safe-top),
+  // 78px) + 16px)` при неопределённой переменной невалиден целиком, и баланс,
+  // аватар и шестерёнка уезжают в угол экрана под системную панель Telegram.
+  useTelegramSafeArea();
 
   return createElement(I18nextProvider, {
     i18n: i18nInstance,
@@ -132,6 +142,10 @@ function StandaloneApp({
 
 let root: Root | null = null;
 let currentI18n: ReturnType<typeof i18n.createInstance> | null = null;
+// Адаптер/конфиг/кошелёк с последнего mount(): mountTopBar рендерит своё дерево
+// отдельным React root (шапка живёт в другом узле, поверх canvas игры) и
+// собирает для него такой же HudProvider.
+let currentMountOptions: MountOptions | null = null;
 
 /** Монтирует кабинет (`ProfileShell`) и боттом-шит кошелька (`WalletSheet`) в
  *  переданный узел. `BalanceChip`, `ProfileAvatarButton`, `SoundSettings` не
@@ -155,6 +169,7 @@ export function mount(el: HTMLElement, opts: MountOptions): void {
     interpolation: { escapeValue: false },
   });
   currentI18n = instance;
+  currentMountOptions = opts;
   applyDocumentLanguage(language);
 
   root = createRoot(el);
@@ -172,6 +187,7 @@ export function unmount(): void {
   root?.unmount();
   root = null;
   currentI18n = null;
+  currentMountOptions = null;
   useHudStore.setState({ open: false, screen: 'hub', walletFocus: null, helpTheme: null });
   useStandaloneStore.getState().reset();
 }
@@ -210,6 +226,81 @@ export function setLanguage(lang: string): void {
   if (!currentI18n) return;
   void currentI18n.changeLanguage(lang);
   applyDocumentLanguage(lang);
+}
+
+/**
+ * Шапка игры: чип баланса слева и аватар справа — ровно те же компоненты и в
+ * той же раскладке, что у пяти игр со сборщиком (см. `App.tsx` баша: там они
+ * стоят рядом с `<SoundSettings/>`). Позиционируются сами, через CSS библиотеки
+ * относительно ближайшего позиционированного предка, поэтому узел должен быть
+ * растянут на весь экран.
+ *
+ * Существует ради scratch-game: у него нет своего React, чтобы отрендерить эти
+ * компоненты, и раньше он рисовал баланс и иконки на canvas — из-за чего его
+ * худ единственный выглядел иначе, чем у остальных.
+ *
+ * Баланс берётся из `setBalance()` и реактивен. Требует уже вызванного
+ * `mount()`: нужны адаптер (аватар, кабинет) и его i18n-инстанс.
+ */
+export interface TopBarOptions {
+  /** Иконка валюты рядом с числом. По умолчанию — TON. */
+  icon?: 'ton' | 'none';
+}
+
+let topBarRoot: Root | null = null;
+let topBarEl: HTMLElement | null = null;
+
+function TopBar({ adapter, config, wallet, opts }: {
+  adapter: HudAdapter;
+  config: HudConfig;
+  wallet: HudWallet;
+  opts: TopBarOptions;
+}) {
+  const balance = useStandaloneStore((s) => s.balance);
+  return createElement(HudProvider, {
+    adapter,
+    config,
+    wallet,
+    children: [
+      createElement(BalanceChip, {
+        key: 'balance',
+        balance,
+        icon: opts.icon === 'none' ? undefined : createElement(IconTon, { width: 18, height: 18 }),
+      }),
+      createElement(ProfileAvatarButton, { key: 'avatar' }),
+    ],
+  });
+}
+
+export function mountTopBar(el: HTMLElement, opts: TopBarOptions = {}): void {
+  if (!currentI18n || !currentMountOptions) {
+    throw new Error('mountTopBar: call mount() first (needs the adapter and the cabinet i18n instance)');
+  }
+  injectStyles();
+  // root переживает повторные вызовы на тот же узел — как и у
+  // mountSoundSettings: пересоздание сбрасывало бы состояние компонентов.
+  if (!topBarRoot || topBarEl !== el) {
+    if (topBarRoot) topBarRoot.unmount();
+    topBarRoot = createRoot(el);
+    topBarEl = el;
+  }
+  topBarRoot.render(
+    createElement(I18nextProvider, {
+      i18n: currentI18n,
+      children: createElement(TopBar, {
+        adapter: currentMountOptions.adapter,
+        config: currentMountOptions.config,
+        wallet: currentMountOptions.wallet,
+        opts,
+      }),
+    }),
+  );
+}
+
+export function unmountTopBar(): void {
+  topBarRoot?.unmount();
+  topBarRoot = null;
+  topBarEl = null;
 }
 
 export interface SoundSettingsOptions {
