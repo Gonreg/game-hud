@@ -135,8 +135,9 @@
     "share_text": "BIGIE में शामिल हों! 🚀",
     "rate_label": "आपकी दर",
     "rate_value": "{{percent}}%",
-    "how_it_works": "अपना लिंक शेयर करें — आपका दोस्त जो भी दांव लगाएगा उससे आपको {{percent}}% आपके रेफ़ बैलेंस में मिलेगा। इसे अपने मुख्य बैलेंस के साथ निकालें।",
+    "how_it_works": "दोस्तों को इनवाइट करें और उनके नेट लॉस का {{percent}}% हमेशा के लिए कमाएं। इसे अपने मुख्य बैलेंस के साथ निकालें।",
     "invitees_title": "आमंत्रित",
+    "player_fallback": "खिलाड़ी",
     "invitees_empty": "अभी कोई नहीं। ऊपर अपना लिंक शेयर करें।",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

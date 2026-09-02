@@ -42,6 +42,26 @@ describe('ProfileShell', () => {
     expect(useHudStore.getState().open).toBe(false);
   });
 
+  it('на хабе кнопки "назад" нет — идти назад некуда', () => {
+    useHudStore.setState({ open: true, screen: 'hub' });
+    renderWithHud(<ProfileShell />);
+    expect(screen.queryByRole('button', { name: /back/i })).not.toBeInTheDocument();
+  });
+
+  it('с внутреннего экрана крестик закрывает кабинет целиком, а не ведёт на хаб', async () => {
+    useHudStore.setState({ open: true, screen: 'stats' });
+    renderWithHud(<ProfileShell />);
+    await userEvent.click(screen.getByRole('button', { name: /close/i }));
+    expect(useHudStore.getState().open).toBe(false);
+  });
+
+  it('с внутреннего экрана есть и "назад", и крестик одновременно', () => {
+    useHudStore.setState({ open: true, screen: 'stats' });
+    renderWithHud(<ProfileShell />);
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+  });
+
   it('на экране history с адаптером, у которого есть getTransactions, открывается гроссбух', async () => {
     const adapter = makeFakeAdapter({
       getTransactions: vi.fn(async () => ({ items: [], nextCursor: null })),

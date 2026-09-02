@@ -347,7 +347,7 @@ describe('standalone GameHud.mountSoundSettings', () => {
     expect(screen.getByText('Music')).toBeInTheDocument();
     expect(screen.getByText('Game sounds')).toBeInTheDocument();
     var sfxRow = screen.getByText('Game sounds').closest('.hud-fm-smitem')!;
-    expect(sfxRow.querySelector('.hud-fm-sms')).toHaveTextContent('off');
+    expect(sfxRow).toHaveAttribute('aria-checked', 'false');
   });
 
   it('unmountSoundSettings() размонтирует дерево из переданного узла', () => {

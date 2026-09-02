@@ -135,8 +135,9 @@
     "share_text": "BIGIE වෙත එකතු වන්න! 🚀",
     "rate_label": "ඔබේ අනුපාතය",
     "rate_value": "{{percent}}%",
-    "how_it_works": "ඔබේ සබැඳිය බෙදාගන්න — ඔබේ මිතුරා තබන සෑම ඔට්ටුවකින්ම ඔබට {{percent}}% ක් ඔබේ යොමු ශේෂයට ලැබේ. එය ඔබේ ප්‍රධාන ශේෂය සමඟ ආපසු ගන්න.",
+    "how_it_works": "මිතුරන් ආරාධනා කර ඔවුන්ගේ ශුද්ධ පාඩුවෙන් {{percent}}% ජීවිත කාලය පුරාම උපයන්න. එය ඔබේ ප්‍රධාන ශේෂය සමඟ ආපසු ගන්න.",
     "invitees_title": "ආරාධිත",
+    "player_fallback": "ක්‍රීඩකයා",
     "invitees_empty": "තවම කිසිවෙක් නැත. ඉහත ඔබේ සබැඳිය බෙදාගන්න.",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

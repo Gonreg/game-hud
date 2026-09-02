@@ -135,8 +135,9 @@
     "share_text": "Rejoins BIGIE ! 🚀",
     "rate_label": "Votre taux",
     "rate_value": "{{percent}}%",
-    "how_it_works": "Partagez votre lien — chaque mise de votre ami vous rapporte {{percent}}% sur votre solde de parrainage. Retirez-le avec votre solde principal.",
+    "how_it_works": "Invite tes amis et gagne {{percent}}% de leurs pertes nettes — à vie. Retire-le avec ton solde principal.",
     "invitees_title": "Invités",
+    "player_fallback": "Joueur",
     "invitees_empty": "Personne encore. Partagez votre lien ci-dessus.",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

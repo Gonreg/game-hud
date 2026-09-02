@@ -135,8 +135,9 @@
     "share_text": "Komm zu BIGIE! 🚀",
     "rate_label": "Deine Rate",
     "rate_value": "{{percent}}%",
-    "how_it_works": "Teile deinen Link – jeder Einsatz deines Freundes bringt dir {{percent}}% auf dein Ref-Guthaben. Zahle es zusammen mit deinem Hauptguthaben aus.",
+    "how_it_works": "Lade Freunde ein und erhalte {{percent}}% ihrer Nettoverluste – auf Lebenszeit. Zahle es zusammen mit deinem Hauptguthaben aus.",
     "invitees_title": "Eingeladen",
+    "player_fallback": "Spieler",
     "invitees_empty": "Noch niemand. Teile deinen Link oben.",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

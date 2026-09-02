@@ -135,8 +135,9 @@
     "share_text": "BIGIE میں شامل ہوں! 🚀",
     "rate_label": "آپ کی شرح",
     "rate_value": "{{percent}}%",
-    "how_it_works": "اپنا لنک شیئر کریں — آپ کا دوست جو بھی شرط لگائے گا اس سے آپ کو {{percent}}% آپ کے ریف بیلنس میں ملے گا۔ اسے اپنے مرکزی بیلنس کے ساتھ نکالیں۔",
+    "how_it_works": "دوستوں کو مدعو کریں اور ان کے نیٹ نقصان کا {{percent}}% تاحیات کمائیں۔ اسے اپنے مرکزی بیلنس کے ساتھ نکالیں۔",
     "invitees_title": "مدعو",
+    "player_fallback": "کھلاڑی",
     "invitees_empty": "ابھی کوئی نہیں۔ اوپر اپنا لنک شیئر کریں۔",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

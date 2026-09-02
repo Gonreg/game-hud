@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ReferralsScreen } from './ReferralsScreen';
 import { renderWithHud } from '../test/renderWithHud';
-import { makeFakeAdapter, makeFailingAdapter } from '../test/fakeAdapter';
+import { makeFakeAdapter, makeFailingAdapter, FAKE_REFERRALS } from '../test/fakeAdapter';
 
 describe('ReferralsScreen', () => {
   it('показывает счётчик приглашённых и заработок', async () => {
@@ -32,6 +32,23 @@ describe('ReferralsScreen', () => {
   it('показывает список приглашённых', async () => {
     renderWithHud(<ReferralsScreen />);
     await waitFor(() => expect(screen.getByText('Ann')).toBeInTheDocument());
+  });
+
+  it('не показывает ник через @ рядом с именем', async () => {
+    renderWithHud(<ReferralsScreen />);
+    await waitFor(() => expect(screen.getByText('Ann')).toBeInTheDocument());
+    expect(screen.queryByText(/@ann/i)).not.toBeInTheDocument();
+  });
+
+  it('без имени показывает нейтральное "Player", а не пусто', async () => {
+    const adapter = makeFakeAdapter({
+      getReferrals: vi.fn(async () => ({
+        ...FAKE_REFERRALS,
+        invitees: [{ ...FAKE_REFERRALS.invitees[0], firstName: null }],
+      })),
+    });
+    renderWithHud(<ReferralsScreen />, { adapter });
+    await waitFor(() => expect(screen.getByText('Player')).toBeInTheDocument());
   });
 
   it('показывает ошибку загрузки', async () => {

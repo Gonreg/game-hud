@@ -67,7 +67,7 @@ basketball `'ru'`. Убрав эти ключи, мы бы показали ис
 
 ## sound.* (панель звука, Task 19 — доработка после ревью)
 
-Ключи `sound.title`, `sound.music`, `sound.sfx`, `sound.on`, `sound.off`, `sound.how`
+Ключи `sound.title`, `sound.music`, `sound.sfx`, `sound.how`
 переведены только на `en` и `ru`: панель звука была частью каждой игры до Task 19, и
 на момент миграции в библиотеку переведена в исходниках (`F/i18n/locales/<lang>.json` →
 `sound.*`, `M/frontend/.../i18n/locales/<lang>.json` → `game.music`/`game.sfx`/...) только

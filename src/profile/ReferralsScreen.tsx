@@ -114,8 +114,7 @@ export function ReferralsScreen() {
                 <span className="hud-profile-list__icon">👤</span>
                 <div className="hud-profile-list__label">
                   <div>
-                    <span>{r.firstName ?? t('common.no_name')}</span>
-                    {r.username && <span> · @{r.username}</span>}
+                    <span>{r.firstName ?? t('referrals.player_fallback')}</span>
                   </div>
                   <div className="hud-profile-hub__sub">
                     {new Date(r.joinedAt).toLocaleDateString(i18n.language || 'en')}

@@ -57,14 +57,7 @@ export function ProfileShell() {
     <div className="hud-profile-overlay">
       <header className="hud-profile-header">
         {screen === 'hub' ? (
-          <button
-            type="button"
-            className="hud-profile-header__back"
-            onClick={close}
-            aria-label={t('common.close')}
-          >
-            <IconClose />
-          </button>
+          <div className="hud-profile-header__spacer" />
         ) : (
           <button
             type="button"
@@ -76,7 +69,14 @@ export function ProfileShell() {
           </button>
         )}
         <div className="hud-profile-header__title">{t(TITLE_KEYS[screen])}</div>
-        <div className="hud-profile-header__spacer" />
+        <button
+          type="button"
+          className="hud-profile-header__back"
+          onClick={close}
+          aria-label={t('common.close')}
+        >
+          <IconClose />
+        </button>
       </header>
       <div className="hud-profile-body">
         <div className="hud-profile-screen" key={screen}>

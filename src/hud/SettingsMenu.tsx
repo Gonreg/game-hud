@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { LanguagePicker } from './LanguagePicker';
+import { Switch } from '../primitives/Switch';
 
 /**
  * Содержимое выпадающего меню шестерёнки (M/game/SettingsSheet.tsx), без
@@ -29,7 +30,13 @@ export function SettingsMenu({
       onPointerDown={(e) => e.stopPropagation()}
     >
       {onToggleMusic && (
-        <button type="button" className="hud-fm-smitem" onClick={onToggleMusic}>
+        <button
+          type="button"
+          className="hud-fm-smitem"
+          role="switch"
+          aria-checked={!!musicOn}
+          onClick={onToggleMusic}
+        >
           <span className="hud-fm-smi">
             <svg
               viewBox="0 0 24 24"
@@ -45,13 +52,17 @@ export function SettingsMenu({
             </svg>
           </span>
           <span className="hud-fm-sml">{t('sound.music')}</span>
-          <span className={'hud-fm-sms' + (musicOn ? '' : ' hud-off')}>
-            {musicOn ? t('sound.on') : t('sound.off')}
-          </span>
+          <Switch checked={!!musicOn} />
         </button>
       )}
       {onToggleSfx && (
-        <button type="button" className="hud-fm-smitem" onClick={onToggleSfx}>
+        <button
+          type="button"
+          className="hud-fm-smitem"
+          role="switch"
+          aria-checked={!!sfxOn}
+          onClick={onToggleSfx}
+        >
           <span className="hud-fm-smi">
             <svg
               viewBox="0 0 24 24"
@@ -67,9 +78,7 @@ export function SettingsMenu({
             </svg>
           </span>
           <span className="hud-fm-sml">{t('sound.sfx')}</span>
-          <span className={'hud-fm-sms' + (sfxOn ? '' : ' hud-off')}>
-            {sfxOn ? t('sound.on') : t('sound.off')}
-          </span>
+          <Switch checked={!!sfxOn} />
         </button>
       )}
       <button type="button" className="hud-fm-smitem" onClick={onHowToPlay}>

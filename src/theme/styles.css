@@ -715,8 +715,13 @@
 .hud-fm-smi { width: 20px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.85); }
 .hud-fm-smi svg { width: 16px; height: 16px; display: block; }
 .hud-fm-sml { flex: 1; }
-.hud-fm-sms { font-size: 11px; font-weight: 700; color: #7cf0b0; }
-.hud-fm-sms.hud-off { color: rgba(255, 255, 255, 0.4); }
+/* iOS-style switch (Music/SFX rows in SettingsMenu/SoundSettings) — replaces
+   the old text on/off label. Purely visual; the row button carries
+   role="switch"/aria-checked. */
+.hud-switch { flex: 0 0 auto; width: 32px; height: 18px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); position: relative; transition: background 0.15s; }
+.hud-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+.hud-switch.hud-on { background: var(--hud-coral); }
+.hud-switch.hud-on::after { transform: translateX(14px); }
 .hud-fm-smtracks { display: flex; gap: 4px; padding: 2px 8px 6px; }
 .hud-fm-smtracks.hud-off { opacity: 0.4; pointer-events: none; }
 .hud-fm-smtrack { flex: 1; padding: 6px 4px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9px; color: rgba(255, 255, 255, 0.6); font-family: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguagePicker } from './LanguagePicker';
+import { Switch } from '../primitives/Switch';
 
 /**
  * Копия F/components/SoundSettings.tsx: своя плавающая шестерёнка (левее
  * аватара) с выпадающим меню Music/SFX (+ подборщик треков) и «как играть».
  * Аудио-движка у библиотеки нет — состояние и переключение приходят пропсами,
- * звуком и списком треков управляет игра. Строки Music/SFX/Sound/on/off —
+ * звуком и списком треков управляет игра. Строки Music/SFX/Sound —
  * неймспейс `sound` словаря библиотеки (панель звука переехала в библиотеку
  * на Task 19, вместе с ней и подписи); названия треков и «как играть» —
  * пропсами, чтобы не терять фичи fatman (Task 25) и matreshka. Внизу меню —
@@ -72,7 +73,13 @@ export function SoundSettings({
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <button type="button" className="hud-fm-smitem" onClick={onToggleMusic}>
+          <button
+            type="button"
+            className="hud-fm-smitem"
+            role="switch"
+            aria-checked={musicOn}
+            onClick={onToggleMusic}
+          >
             <span className="hud-fm-smi">
               <svg
                 viewBox="0 0 24 24"
@@ -88,9 +95,7 @@ export function SoundSettings({
               </svg>
             </span>
             <span className="hud-fm-sml">{t('sound.music')}</span>
-            <span className={'hud-fm-sms' + (musicOn ? '' : ' hud-off')}>
-              {musicOn ? t('sound.on') : t('sound.off')}
-            </span>
+            <Switch checked={musicOn} />
           </button>
           {tracks && tracks.length > 0 && (
             <div className={'hud-fm-smtracks' + (musicOn ? '' : ' hud-off')}>
@@ -106,7 +111,13 @@ export function SoundSettings({
               ))}
             </div>
           )}
-          <button type="button" className="hud-fm-smitem" onClick={onToggleSfx}>
+          <button
+            type="button"
+            className="hud-fm-smitem"
+            role="switch"
+            aria-checked={sfxOn}
+            onClick={onToggleSfx}
+          >
             <span className="hud-fm-smi">
               <svg
                 viewBox="0 0 24 24"
@@ -122,9 +133,7 @@ export function SoundSettings({
               </svg>
             </span>
             <span className="hud-fm-sml">{t('sound.sfx')}</span>
-            <span className={'hud-fm-sms' + (sfxOn ? '' : ' hud-off')}>
-              {sfxOn ? t('sound.on') : t('sound.off')}
-            </span>
+            <Switch checked={sfxOn} />
           </button>
           {onHowToPlay && (
             <button type="button" className="hud-fm-smitem" onClick={onHowToPlay}>

@@ -134,8 +134,9 @@
     "invited": "Invited",
     "earned": "Earned",
     "ref_balance": "Ref balance",
-    "how_it_works": "Share your link — every bet your friend places gives you {{percent}}% to your ref balance. Withdraw together with your main balance.",
+    "how_it_works": "Invite friends and earn {{percent}}% of their net losses — for life. Withdraw it together with your main balance.",
     "invitees_title": "Invited",
+    "player_fallback": "Player",
     "invitees_empty": "No one yet. Share your link above.",
     "share_text": "Jump into BIGIE! 🚀",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }

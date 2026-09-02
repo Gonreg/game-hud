@@ -58,4 +58,33 @@ describe('SoundSettings', () => {
     await userEvent.click(screen.getByText(/how to play/i));
     expect(onHowToPlay).toHaveBeenCalled();
   });
+
+  it('Music/SFX — доступные свитчи с aria-checked, а не текст on/off', async () => {
+    renderWithHud(
+      <SoundSettings musicOn sfxOn={false} onToggleMusic={() => {}} onToggleSfx={() => {}} />,
+    );
+    await openMenu();
+    expect(screen.getByRole('switch', { name: /music/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('switch', { name: /game sounds/i })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    expect(screen.queryByText(/^on$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^off$/i)).not.toBeInTheDocument();
+  });
+
+  it('свитч SFX управляется с клавиатуры', async () => {
+    const onToggleSfx = vi.fn();
+    renderWithHud(
+      <SoundSettings musicOn sfxOn onToggleMusic={() => {}} onToggleSfx={onToggleSfx} />,
+    );
+    await openMenu();
+    const sfx = screen.getByRole('switch', { name: /game sounds/i });
+    sfx.focus();
+    await userEvent.keyboard('[Space]');
+    expect(onToggleSfx).toHaveBeenCalledOnce();
+  });
 });

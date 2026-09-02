@@ -135,8 +135,9 @@
     "share_text": "¡Únete a BIGIE! 🚀",
     "rate_label": "Tu tasa",
     "rate_value": "{{percent}}%",
-    "how_it_works": "Comparte tu enlace: cada apuesta que haga tu amigo te da un {{percent}}% a tu saldo ref. Retíralo junto con tu saldo principal.",
+    "how_it_works": "Invita a tus amigos y gana un {{percent}}% de sus pérdidas netas — de por vida. Retíralo junto con tu saldo principal.",
     "invitees_title": "Invitados",
+    "player_fallback": "Jugador",
     "invitees_empty": "Nadie aún. Comparte tu enlace de arriba.",
     "agency_cta_text": "Increase your referral income up to 30% — for agencies and influencers",
     "agency_cta_btn": "Leave a request"
@@ -191,8 +192,6 @@
     "title": "Sound",
     "music": "Music",
     "sfx": "Game sounds",
-    "on": "on",
-    "off": "off",
     "how": "How to play"
   }
 }
