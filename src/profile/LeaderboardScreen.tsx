@@ -123,7 +123,7 @@ export function LeaderboardScreen() {
         </div>
       )}
 
-      {data?.me && data.me.rank > 20 && (
+      {data?.me && data.me.rank > 100 && (
         <div className="hud-profile-card">
           <div className="hud-profile-card__label">{t('leaderboard.your_place')}</div>
           <div className="hud-profile-list__row" style={{ cursor: 'default', padding: '8px 0' }}>

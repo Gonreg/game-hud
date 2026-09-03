@@ -32,13 +32,25 @@ describe('LeaderboardScreen', () => {
     const adapter = makeFakeAdapter({
       getLeaderboard: vi.fn(async () => ({
         ...FAKE_LEADERBOARD,
-        // Ранг больше 20: отдельная карточка «твоё место» в fatman рисуется
-        // только для тех, кто не попал в топ-20.
-        me: { ...FAKE_LEADERBOARD.top[0], rank: 42, name: 'Me', userId: 'u1' },
+        // Ранг больше 100: отдельная карточка «твоё место» рисуется только
+        // для тех, кто не попал в топ-100.
+        me: { ...FAKE_LEADERBOARD.top[0], rank: 142, name: 'Me', userId: 'u1' },
       })),
     });
     renderWithHud(<LeaderboardScreen />, { adapter });
     await waitFor(() => expect(screen.getByText('Me')).toBeInTheDocument());
+  });
+
+  it('не рисует отдельную карточку «моё место», когда ранг попадает в топ-100', async () => {
+    const adapter = makeFakeAdapter({
+      getLeaderboard: vi.fn(async () => ({
+        ...FAKE_LEADERBOARD,
+        me: { ...FAKE_LEADERBOARD.top[0], rank: 50, name: 'Me', userId: 'u1' },
+      })),
+    });
+    renderWithHud(<LeaderboardScreen />, { adapter });
+    await waitFor(() => expect(screen.getByText('Top')).toBeInTheDocument());
+    expect(screen.queryByText('Me')).not.toBeInTheDocument();
   });
 
   it('подписывает оборот валютой из конфига, а не хардкодом TON', async () => {
