@@ -146,10 +146,16 @@ export function ProfileHub() {
             onClick={() => setScreen(id)}
             data-track={`menu_${id}`}
           >
-            <span className="hud-profile-list__icon">
+            <span
+              className={`hud-profile-list__icon${accent ? ' hud-profile-list__icon--accent' : ''}`}
+            >
               <Icon />
             </span>
-            <span className="hud-profile-list__label">{label}</span>
+            <span
+              className={`hud-profile-list__label${accent ? ' hud-profile-list__label--accent' : ''}`}
+            >
+              {label}
+            </span>
             {hint && <span className="hud-profile-list__hint">{hint}</span>}
             <span className="hud-profile-list__chev">
               <IconChevron />

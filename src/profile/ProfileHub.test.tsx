@@ -47,4 +47,16 @@ describe('ProfileHub', () => {
     await waitFor(() => expect(screen.getByText('Test')).toBeInTheDocument());
     expect(screen.queryByText(/history/i)).not.toBeInTheDocument();
   });
+
+  it('пункт «Реферальная программа» выделен акцентом сильнее прочих строк', async () => {
+    renderWithHud(<ProfileHub />);
+    await waitFor(() => expect(screen.getByText('Test')).toBeInTheDocument());
+    const label = screen.getByText('Referral Program');
+    expect(label).toHaveClass('hud-profile-list__label--accent');
+    const row = label.closest('button');
+    expect(row).toHaveClass('hud-profile-list__row--accent');
+    expect(row?.querySelector('.hud-profile-list__icon')).toHaveClass(
+      'hud-profile-list__icon--accent',
+    );
+  });
 });
