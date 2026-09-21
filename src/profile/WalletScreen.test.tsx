@@ -22,6 +22,25 @@ describe('WalletScreen', () => {
     await waitFor(() => expect(container.querySelector('.hud-profile-promos')).toBeInTheDocument());
   });
 
+  // Остаток отыгрыша — обещание игроку: «столько прокрути, и бонус твой».
+  // Показывать его можно только когда бэк действительно его считает.
+  it('показывает остаток отыгрыша, когда бэк его отдаёт', async () => {
+    const adapter = makeFakeAdapter();
+    const base = adapter.getMe;
+    adapter.getMe = vi.fn(async () => ({ ...(await base()), wagerRemaining: 120 }));
+    renderWithHud(<WalletScreen />, { adapter });
+    expect(await screen.findByText(/120/)).toBeInTheDocument();
+  });
+
+  // А когда не отдаёт — молчит. Ноль вместо отсутствующего поля читался бы как
+  // «уже отыграно» у игры, где отыгрывать нечего и никогда не было чего.
+  it('молчит про отыгрыш, если бэк такого поля не знает', async () => {
+    const adapter = makeFakeAdapter();
+    const { container } = renderWithHud(<WalletScreen />, { adapter });
+    await waitFor(() => expect(container.querySelector('.hud-profile-promos')).toBeInTheDocument());
+    expect(screen.queryByText(/осталось отыграть|left to wager/i)).not.toBeInTheDocument();
+  });
+
   it('отправляет вывод с суммой и адресом', async () => {
     const adapter = makeFakeAdapter();
     renderWithHud(<WalletScreen />, { adapter });

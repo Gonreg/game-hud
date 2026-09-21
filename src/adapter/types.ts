@@ -12,6 +12,11 @@ export interface Me {
   displayName: string | null;
   balance: number;
   bonusBalance: number;
+  /** Сколько оборота осталось сыграть, чтобы удержание сняли и подарок стал
+   *  выводимым. Необязательное: механика отыгрыша есть не у всех бэков, а
+   *  отсутствие поля честнее нуля, который читается как «уже отыграно».
+   *  Ноль при непустом `bonusBalance` означает именно отыгранный подарок. */
+  wagerRemaining?: number;
   refBalance: number;
   refCode: string | null;
   refLink: string | null;

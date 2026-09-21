@@ -59,7 +59,9 @@
     "withdraw_info": "Minimum 0.5 TON. Up to 100 TON — automatic in ~1 minute. Above 100 TON — manual review within 24 hours.",
     "need_deposit_first": "Make a deposit from this wallet first, then you can link it",
     "promo_title": "🎁 +100% deposit bonus",
-    "bonus_note": "+100% bonus on every top-up — for bets (non-withdrawable)."
+    "bonus_note": "+100% bonus on every top-up — for bets, withdrawable once wagered.",
+    "bonus_wager_info": "Your sign-up gift and top-up bonus can be staked right away, but they become withdrawable only after wagering.\n\nWagering means bet turnover: the total of the bets you place. Winning and losing bets both count. Bets cancelled before settlement do not.\n\nA top-up bonus needs turnover of 30× the bonus; the sign-up gift needs 40×.\n\nOnce the turnover is reached the hold is lifted and the money becomes ordinary — you can withdraw it. Withdraw sooner and the unwagered remainder of the bonus is forfeited.",
+    "bonus_wager_left": "{{amount}} left to wager before the bonus can be withdrawn"
   },
   "history": {
     "title": "इतिहास",

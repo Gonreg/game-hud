@@ -44,6 +44,10 @@ export function WalletScreen() {
   // и до привязки вывод бессмысленно отправлять. Бэк без привязки (matreshka)
   // выводит на адрес, который мы передаём из TonConnect, — там гейт по адресу.
   const canWithdraw = hasWalletLink ? Boolean(me.data?.walletAddress) : Boolean(address);
+  // Остаток отыгрыша. null означает «бэк этой механики не знает» и молчит, а не
+  // показывает ноль: ноль здесь читался бы как «уже отыграно» у игры, где
+  // отыгрывать нечего и никогда не было чего.
+  const wagerLeft = me.data?.wagerRemaining ?? null;
 
   async function deposit() {
     if (!address) {
@@ -119,7 +123,20 @@ export function WalletScreen() {
       <div className="hud-profile-promos">
         <div className="hud-profile-promo">
           <div className="hud-profile-promo__title">{t('wallet.promo_title')}</div>
-          <div className="hud-profile-promo__sub">{t('wallet.bonus_note')}</div>
+          <div className="hud-profile-promo__sub">
+            {t('wallet.bonus_note')}
+            <InfoPopover text={t('wallet.bonus_wager_info')} />
+          </div>
+          {/* Прогресс показываем, только когда бэк реально считает отыгрыш и он
+              не закончен. Поле необязательное: у бэка без этой механики его нет
+              вовсе, и строка «осталось 0» была бы обещанием, которого никто не
+              давал. Отыгранный подарок (ноль при непустом удержании) тоже
+              молчит — сказать о нём должно снятое удержание, а не эта строка. */}
+          {wagerLeft != null && wagerLeft > 0 && (
+            <div className="hud-profile-promo__sub">
+              {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft) })}
+            </div>
+          )}
         </div>
       </div>
 
