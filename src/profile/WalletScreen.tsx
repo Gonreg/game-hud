@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useHudAdapter } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { useHudStore } from '../store/hudStore';
-import { formatWhen } from '../format/datetime';
+import { formatDeadline, formatWhen } from '../format/datetime';
 import { fmtAmount } from '../format/money';
 import { InfoPopover } from '../primitives/InfoPopover';
 import { Skeleton } from '../primitives/Skeleton';
@@ -48,6 +48,9 @@ export function WalletScreen() {
   // показывает ноль: ноль здесь читался бы как «уже отыграно» у игры, где
   // отыгрывать нечего и никогда не было чего.
   const wagerLeft = me.data?.wagerRemaining ?? null;
+  // Срок сгорания. Поля нет — молчим: бонус бессрочный или бэк срока не знает.
+  // Неразборчивая строка тоже молчит, а не показывает «Invalid Date».
+  const expiresAt = formatDeadline(me.data?.bonusExpiresAt, i18n.language || 'en');
 
   async function deposit() {
     if (!address) {
@@ -135,6 +138,11 @@ export function WalletScreen() {
           {wagerLeft != null && wagerLeft > 0 && (
             <div className="hud-profile-promo__sub">
               {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft) })}
+            </div>
+          )}
+          {expiresAt && (
+            <div className="hud-profile-promo__sub">
+              {t('wallet.bonus_expires', { date: expiresAt })}
             </div>
           )}
         </div>

@@ -41,6 +41,40 @@ describe('WalletScreen', () => {
     expect(screen.queryByText(/осталось отыграть|left to wager/i)).not.toBeInTheDocument();
   });
 
+  // Срок сгорания — второе обещание рядом с отыгрышем: «не успеешь до этой даты
+  // — бонус сгорит». Без строки сгорание выглядит для игрока как пропажа денег.
+  it('показывает срок сгорания бонуса датой на языке интерфейса', async () => {
+    const adapter = makeFakeAdapter();
+    const base = adapter.getMe;
+    adapter.getMe = vi.fn(async () => ({
+      ...(await base()),
+      bonusExpiresAt: '2026-10-05T11:00:00Z',
+    }));
+    renderWithHud(<WalletScreen />, { adapter });
+    const line = await screen.findByText(/Bonus expires/);
+    // Дата, а не сырая ISO-строка: игрок не обязан читать RFC 3339.
+    expect(line.textContent).not.toContain('2026-10-05T');
+    expect(line.textContent).toMatch(/October/);
+  });
+
+  it('молчит про срок, если бэк его не отдаёт', async () => {
+    const adapter = makeFakeAdapter();
+    const { container } = renderWithHud(<WalletScreen />, { adapter });
+    await waitFor(() => expect(container.querySelector('.hud-profile-promos')).toBeInTheDocument());
+    expect(screen.queryByText(/Bonus expires/)).not.toBeInTheDocument();
+  });
+
+  // Битая строка не должна превращаться в «Invalid Date» на экране кошелька.
+  it('молчит про срок, если дата не разбирается', async () => {
+    const adapter = makeFakeAdapter();
+    const base = adapter.getMe;
+    adapter.getMe = vi.fn(async () => ({ ...(await base()), bonusExpiresAt: 'soon' }));
+    const { container } = renderWithHud(<WalletScreen />, { adapter });
+    await waitFor(() => expect(container.querySelector('.hud-profile-promos')).toBeInTheDocument());
+    await waitFor(() => expect(adapter.getMe).toHaveBeenCalled());
+    expect(screen.queryByText(/Bonus expires|Invalid Date/)).not.toBeInTheDocument();
+  });
+
   it('отправляет вывод с суммой и адресом', async () => {
     const adapter = makeFakeAdapter();
     renderWithHud(<WalletScreen />, { adapter });
