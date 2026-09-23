@@ -49,7 +49,7 @@ export function WalletSheet({
 function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: number | null }) {
   const { t } = useTranslation();
   const adapter = useHudAdapter();
-  const currency = useHudConfig().currency;
+  const { currency, scale } = useHudConfig();
   const wallet = useHudWallet();
   const address = wallet.address;
   const me = useHudResource('me', (a) => a.getMe());
@@ -147,7 +147,12 @@ function WalletSheetBody({ onClose, balance }: { onClose: () => void; balance?: 
       <div className="hud-wallet-sheet-balance">
         <div className="hud-wallet-sheet-balance__label">{t('wallet.balance_label')}</div>
         <div className="hud-wallet-sheet-balance__value">
-          {fmtAmount(balance ?? me.data?.balance ?? null)} <span>{currency}</span>
+          {/* Баланс из пропа — число игры, строки к нему нет; баланс из `me` —
+              с точной строкой, если адаптер её дал. */}
+          {balance != null
+            ? fmtAmount(balance, { scale })
+            : fmtAmount(me.data?.balance ?? null, { exact: me.data?.balanceStr, scale })}{' '}
+          <span>{currency}</span>
         </div>
       </div>
 

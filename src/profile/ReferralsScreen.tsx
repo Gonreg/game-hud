@@ -8,7 +8,7 @@ import { Skeleton } from '../primitives/Skeleton';
 
 export function ReferralsScreen() {
   const { t, i18n } = useTranslation();
-  const currency = useHudConfig().currency;
+  const { currency, scale } = useHudConfig();
   const openHelpWithTheme = useHudStore((s) => s.openHelpWithTheme);
   const { data, loading, error } = useHudResource('referrals', (a) => a.getReferrals());
   const [msg, setMsg] = useState<string | null>(null);
@@ -88,12 +88,12 @@ export function ReferralsScreen() {
         />
         <StatTile
           label={t('referrals.ref_balance')}
-          value={`${fmtAmount(data?.refBalance)} ${currency}`}
+          value={`${fmtAmount(data?.refBalance, { exact: data?.refBalanceStr, scale })} ${currency}`}
           color="255, 211, 90"
         />
         <StatTile
           label={t('referrals.earned')}
-          value={`${fmtAmount(data?.totalEarned)} ${currency}`}
+          value={`${fmtAmount(data?.totalEarned, { exact: data?.totalEarnedStr, scale })} ${currency}`}
           color="45, 212, 191"
         />
         <StatTile
@@ -124,7 +124,7 @@ export function ReferralsScreen() {
                   className="hud-profile-list__hint"
                   style={{ color: r.earnedFromThem > 0 ? '#2dd4bf' : undefined }}
                 >
-                  +{fmtAmount(r.earnedFromThem)} {currency}
+                  +{fmtAmount(r.earnedFromThem, { exact: r.earnedFromThemStr, scale })} {currency}
                 </span>
               </div>
             ))}

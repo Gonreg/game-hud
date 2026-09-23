@@ -1,3 +1,21 @@
+/**
+ * Точные суммы: поля `<имя>Str` (с v1.4.0).
+ *
+ * Рядом с каждым показываемым денежным числом адаптер МОЖЕТ положить ту же
+ * сумму точной десятичной строкой: `-?цифры[.цифры]`, точка, без разрядов и
+ * экспоненты, обычно ровно `scale` знаков после точки («0.123456789012345678»).
+ * Есть строка — кабинет печатает её (см. `fmtAmount`), нет — число, как всегда.
+ *
+ * Зачем. У валют со scale > 9 (ETH — 18) JSON-число не держит сумму: ставка
+ * 0.123456789012345678 ETH доезжает числом 0.12345678901234568, и никакой
+ * форматтер правду из него уже не достанет. Число при этом остаётся
+ * обязательным: по нему кабинет берёт знак и сравнения (знак и равенство нулю
+ * у double верны и на 18 знаках), и его одно читают пять Телеграм-игр,
+ * которые про строки не знают и рисуются байт в байт как до v1.4.0.
+ *
+ * Строка обязана быть той же суммой, что число: кабинет не сверяет их, а
+ * рисует строку, но цвет и «+/−» выбирает по числу.
+ */
 export interface Me {
   id: string;
   /** Идентификатор для отображения в профиле — у Telegram-игр это numeric
@@ -11,18 +29,22 @@ export interface Me {
    *  Раньше — `tgFirstName`. */
   displayName: string | null;
   balance: number;
+  balanceStr?: string;
   bonusBalance: number;
+  bonusBalanceStr?: string;
   /** Сколько оборота осталось сыграть, чтобы удержание сняли и подарок стал
    *  выводимым. Необязательное: механика отыгрыша есть не у всех бэков, а
    *  отсутствие поля честнее нуля, который читается как «уже отыграно».
    *  Ноль при непустом `bonusBalance` означает именно отыгранный подарок. */
   wagerRemaining?: number;
+  wagerRemainingStr?: string;
   /** Когда неотыгранный остаток бонуса сгорит — момент в ISO 8601
    *  (`2026-10-05T11:00:00Z`). Необязательное по той же причине, что и
    *  `wagerRemaining`: срока нет у бонусов без сгорания и у бэков без этой
    *  механики, и отсутствие поля означает «сгорать нечему», а не «уже сгорело». */
   bonusExpiresAt?: string;
   refBalance: number;
+  refBalanceStr?: string;
   refCode: string | null;
   refLink: string | null;
   walletAddress: string | null;
@@ -32,6 +54,7 @@ export interface Transaction {
   id: string;
   kind: string;
   amount: number;
+  amountStr?: string;
   /** Снимок баланса до и после проводки. Есть не у всех бэков: у crash-race
    *  гроссбух хранит только сумму, поэтому поля необязательные — лучше их
    *  отсутствие, чем ноль, который выглядит как настоящий баланс. */
@@ -45,16 +68,24 @@ export interface Stats {
   roundsPlayed: number;
   bestMultiplier: number;
   totalWagered: number;
+  totalWageredStr?: string;
   totalWon: number;
+  totalWonStr?: string;
   netProfit: number;
+  netProfitStr?: string;
   winrate: number;
   bestStreak: number;
   avgBet: number;
+  avgBetStr?: string;
   biggestWin: number;
+  biggestWinStr?: string;
+  /** Положительное число: экран сам ставит перед ним «−». */
   biggestLoss: number;
+  biggestLossStr?: string;
   worstStreak: number;
   todayBets: number;
   todayProfit: number;
+  todayProfitStr?: string;
   weekBets: number;
   weekProfit: number;
 }
@@ -79,6 +110,7 @@ export interface ReferralInvitee {
   joinedAt: string;
   /** Без суффикса валюты: у matreshka это GRAM, а не TON. */
   earnedFromThem: number;
+  earnedFromThemStr?: string;
 }
 
 export interface Referrals {
@@ -86,8 +118,10 @@ export interface Referrals {
   refLink: string | null;
   invitedCount: number;
   totalEarned: number;
+  totalEarnedStr?: string;
   ratePercent: number;
   refBalance: number;
+  refBalanceStr?: string;
   invitees: ReferralInvitee[];
 }
 
@@ -100,9 +134,13 @@ export interface LeaderboardEntry {
   name: string | null;
   username: string | null;
   profit: number;
+  profitStr?: string;
   bestMultiplier: number;
   turnover: number;
+  turnoverStr?: string;
+  /** Положительное число: экран сам ставит перед ним «-». */
   loss: number;
+  lossStr?: string;
   rounds: number;
   isFriend: boolean;
 }
@@ -144,6 +182,7 @@ export interface Deposit {
 export interface Withdrawal {
   id: string;
   amount: number;
+  amountStr?: string;
   status: string;
   address: string | null;
   /**
@@ -166,8 +205,13 @@ export interface GameRound {
   id: string;
   /** Сумма ставки в дробных единицах отображения. */
   bet: number;
+  betStr?: string;
   /** Выплата; ноль, если раунд проигран. */
   payout: number;
+  /** Кабинет показывает разность `payout − bet`. Пришли обе строки — она
+   *  считается над ними в bigint, точно до последнего знака; не пришла хоть
+   *  одна — по числам, как до v1.4.0. */
+  payoutStr?: string;
   /** Коэффициент раунда. */
   coef: number;
   /** Исход в терминах игры: cashed, busted, won, lost и так далее. */
@@ -245,6 +289,17 @@ export interface HudConfig {
   botUsername?: string;
   /** Подпись валюты на экранах: GRAM, TON. */
   currency: string;
+  /**
+   * Точность валюты — знаков после точки (EUR — 2, BTC — 8, ETH — 18). Без
+   * неё суммы-числа печатаются с двумя знаками, как до v1.4.0, и пять
+   * Телеграм-игр её не передают. С ней число печатается до `scale` знаков
+   * без хвостовых нулей, минимум два, но не дальше девятого: дальше число
+   * врёт, и точные знаки должна принести строка `<имя>Str`.
+   *
+   * Одна на весь кабинет, а не в каждой сумме: кабинет показывает одну валюту
+   * (подпись `currency` тоже одна), и сумм другой валюты в нём не бывает.
+   */
+  scale?: number;
   minBet: number;
   maxBet: number;
   /**

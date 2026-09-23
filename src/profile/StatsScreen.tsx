@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useHudConfig } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
-import { fmtAmount } from '../format/money';
+import { absExact, fmtAmount } from '../format/money';
 import { Skeleton } from '../primitives/Skeleton';
 import type { Percentiles } from '../adapter/types';
 
@@ -44,7 +44,7 @@ function Card({ label, value, percentile, color, t }: CardProps) {
 
 export function StatsScreen() {
   const { t } = useTranslation();
-  const currency = useHudConfig().currency;
+  const { currency, scale } = useHudConfig();
   const { data, loading, error } = useHudResource('stats', (a) => a.getStats());
   const { data: pct } = useHudResource<Percentiles>('percentiles', (a) => a.getPercentiles());
 
@@ -88,7 +88,7 @@ export function StatsScreen() {
       <Card
         t={t}
         label={t('stats.net_profit')}
-        value={`${data.netProfit >= 0 ? '+' : ''}${fmtAmount(data.netProfit)} ${currency}`}
+        value={`${data.netProfit >= 0 ? '+' : ''}${fmtAmount(data.netProfit, { exact: data.netProfitStr, scale })} ${currency}`}
         percentile={pct?.profit}
         color={profitColor}
       />
@@ -102,35 +102,35 @@ export function StatsScreen() {
       <Card
         t={t}
         label={t('stats.avg_bet')}
-        value={`${fmtAmount(data.avgBet)} ${currency}`}
+        value={`${fmtAmount(data.avgBet, { exact: data.avgBetStr, scale })} ${currency}`}
         percentile={pct?.avgBet}
         color="200, 255, 90"
       />
       <Card
         t={t}
         label={t('stats.total_wagered')}
-        value={`${fmtAmount(data.totalWagered)} ${currency}`}
+        value={`${fmtAmount(data.totalWagered, { exact: data.totalWageredStr, scale })} ${currency}`}
         percentile={null}
         color="255, 211, 90"
       />
       <Card
         t={t}
         label={t('stats.total_won')}
-        value={`${fmtAmount(data.totalWon)} ${currency}`}
+        value={`${fmtAmount(data.totalWon, { exact: data.totalWonStr, scale })} ${currency}`}
         percentile={null}
         color="45, 212, 191"
       />
       <Card
         t={t}
         label={t('stats.biggest_win')}
-        value={`+${fmtAmount(data.biggestWin)} ${currency}`}
+        value={`+${fmtAmount(data.biggestWin, { exact: data.biggestWinStr, scale })} ${currency}`}
         percentile={null}
         color="94, 231, 155"
       />
       <Card
         t={t}
         label={t('stats.biggest_loss')}
-        value={`−${fmtAmount(data.biggestLoss)} ${currency}`}
+        value={`−${fmtAmount(data.biggestLoss, { exact: data.biggestLossStr, scale })} ${currency}`}
         percentile={null}
         color="255, 58, 71"
       />
@@ -144,7 +144,7 @@ export function StatsScreen() {
       <Card
         t={t}
         label={t('stats.today_profit')}
-        value={`${data.todayProfit >= 0 ? '+' : '−'}${fmtAmount(Math.abs(data.todayProfit))} ${currency}`}
+        value={`${data.todayProfit >= 0 ? '+' : '−'}${fmtAmount(Math.abs(data.todayProfit), { exact: absExact(data.todayProfitStr), scale })} ${currency}`}
         percentile={null}
         color={data.todayProfit >= 0 ? '45, 212, 191' : '255, 122, 89'}
       />

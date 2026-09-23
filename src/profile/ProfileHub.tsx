@@ -1,6 +1,6 @@
 import type { ComponentType, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHudAdapter } from '../context/HudProvider';
+import { useHudAdapter, useHudConfig } from '../context/HudProvider';
 import { useHudStore, type HudScreen } from '../store/hudStore';
 import { useHudResource } from '../context/useHudResource';
 import { useHudWallet } from '../wallet/useHudWallet';
@@ -28,6 +28,7 @@ interface RowDef {
 export function ProfileHub() {
   const { t } = useTranslation();
   const adapter = useHudAdapter();
+  const { scale } = useHudConfig();
   const setScreen = useHudStore((s) => s.setScreen);
   const { data: me } = useHudResource('me', (a) => a.getMe());
   // Кошелёк подключается на клиенте через TonConnect (или мост игры) и на
@@ -105,17 +106,17 @@ export function ProfileHub() {
         >
           <div className="hud-profile-hub__bal-label">{t('profile.balance_main')}</div>
           <div className="hud-profile-hub__bal-value hud-profile-hub__bal-main">
-            {fmtAmount(me?.balance)}
+            {fmtAmount(me?.balance, { exact: me?.balanceStr, scale })}
           </div>
         </div>
         <div>
           <div className="hud-profile-hub__bal-label">{t('profile.balance_bonus')}</div>
-          <div className="hud-profile-hub__bal-value">{fmtAmount(me?.bonusBalance)}</div>
+          <div className="hud-profile-hub__bal-value">{fmtAmount(me?.bonusBalance, { exact: me?.bonusBalanceStr, scale })}</div>
         </div>
         <div>
           <div className="hud-profile-hub__bal-label">{t('profile.balance_ref')}</div>
           <div className="hud-profile-hub__bal-value hud-profile-hub__bal-ref">
-            {fmtAmount(me?.refBalance)}
+            {fmtAmount(me?.refBalance, { exact: me?.refBalanceStr, scale })}
           </div>
         </div>
       </div>

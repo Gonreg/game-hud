@@ -14,12 +14,17 @@ function displayName(e: LeaderboardEntry, idLabel: string): string {
   return e.name || (e.username ? `@${e.username}` : `${idLabel} ${e.userId.slice(-4)}`);
 }
 
-function valueFor(e: LeaderboardEntry, mode: LeaderboardMode, currency: string): string {
+function valueFor(
+  e: LeaderboardEntry,
+  mode: LeaderboardMode,
+  currency: string,
+  scale: number | undefined,
+): string {
   if (mode === 'multiplier') return `${e.bestMultiplier.toFixed(2)}×`;
-  if (mode === 'turnover') return `${fmtAmount(e.turnover)} ${currency}`;
-  if (mode === 'loss') return `-${fmtAmount(e.loss)} ${currency}`;
+  if (mode === 'turnover') return `${fmtAmount(e.turnover, { exact: e.turnoverStr, scale })} ${currency}`;
+  if (mode === 'loss') return `-${fmtAmount(e.loss, { exact: e.lossStr, scale })} ${currency}`;
   const sign = e.profit >= 0 ? '+' : '';
-  return `${sign}${fmtAmount(e.profit)} ${currency}`;
+  return `${sign}${fmtAmount(e.profit, { exact: e.profitStr, scale })} ${currency}`;
 }
 
 /** #ffd35a, #c8cce0, #ff7a59 переехали в классы темы (hud-lb-value--*); два
@@ -40,7 +45,7 @@ function valueColor(e: LeaderboardEntry, mode: LeaderboardMode): string | undefi
 
 export function LeaderboardScreen() {
   const { t } = useTranslation();
-  const currency = useHudConfig().currency;
+  const { currency, scale } = useHudConfig();
   const [mode, setMode] = useState<LeaderboardMode>('profit');
   const [win, setWin] = useState<LeaderboardWindow>('7d');
   const { data, loading, error } = useHudResource(`lb:${mode}:${win}`, (a) =>
@@ -115,7 +120,7 @@ export function LeaderboardScreen() {
                     .join(' ')}
                   style={{ color: valueColor(e, mode), fontWeight: 600 }}
                 >
-                  {valueFor(e, mode, currency)}
+                  {valueFor(e, mode, currency, scale)}
                 </div>
               </div>
             );
@@ -140,7 +145,7 @@ export function LeaderboardScreen() {
                 .join(' ')}
               style={{ color: valueColor(data.me, mode), fontWeight: 600 }}
             >
-              {valueFor(data.me, mode, currency)}
+              {valueFor(data.me, mode, currency, scale)}
             </div>
           </div>
         </div>

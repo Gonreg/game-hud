@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHudAdapter } from '../context/HudProvider';
+import { useHudAdapter, useHudConfig } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { useHudStore } from '../store/hudStore';
 import { formatDeadline, formatWhen } from '../format/datetime';
@@ -16,6 +16,7 @@ const NANO_PER_TON = 1_000_000_000n;
 export function WalletScreen() {
   const { t, i18n } = useTranslation();
   const adapter = useHudAdapter();
+  const { scale } = useHudConfig();
   const wallet = useHudWallet();
   const address = wallet.address;
   const me = useHudResource('me', (a) => a.getMe());
@@ -137,7 +138,7 @@ export function WalletScreen() {
               молчит — сказать о нём должно снятое удержание, а не эта строка. */}
           {wagerLeft != null && wagerLeft > 0 && (
             <div className="hud-profile-promo__sub">
-              {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft) })}
+              {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft, { exact: me.data?.wagerRemainingStr, scale }) })}
             </div>
           )}
           {expiresAt && (
@@ -246,7 +247,7 @@ export function WalletScreen() {
               const when = formatWhen(w.createdAt, i18n.language || 'en', 'date');
               return (
                 <div key={w.id} className="hud-wallet-withdrawals__row">
-                  <span>{fmtAmount(w.amount)}</span>
+                  <span>{fmtAmount(w.amount, { exact: w.amountStr, scale })}</span>
                   <span className="hud-profile-list__hint">{w.status}</span>
                   {when && <span className="hud-profile-list__hint">{when}</span>}
                 </div>

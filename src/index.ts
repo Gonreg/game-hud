@@ -2,7 +2,7 @@ export { HudProvider, useHudAdapter, useHudConfig } from './context/HudProvider'
 export { useHudResource, type HudResource } from './context/useHudResource';
 export { useHudStore, type HudScreen } from './store/hudStore';
 export { useTelegramSafeArea } from './theme/useTelegramSafeArea';
-export { fmtAmount } from './format/money';
+export { fmtAmount, type AmountOptions } from './format/money';
 
 export { ProfileShell } from './profile/ProfileShell';
 export { WalletSheet } from './wallet/WalletSheet';

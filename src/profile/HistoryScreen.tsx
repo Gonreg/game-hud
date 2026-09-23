@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 import { useTranslation } from 'react-i18next';
-import { useHudAdapter } from '../context/HudProvider';
+import { useHudAdapter, useHudConfig } from '../context/HudProvider';
 import { fmtAmount } from '../format/money';
 import type { Transaction } from '../adapter/types';
 
@@ -15,6 +15,7 @@ interface Row extends Transaction {
 export function HistoryScreen() {
   const { t, i18n } = useTranslation();
   const adapter = useHudAdapter();
+  const { scale } = useHudConfig();
   const [items, setItems] = useState<Row[]>([]);
   const [cursor, setCursor] = useState<string | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
@@ -94,13 +95,13 @@ export function HistoryScreen() {
                 style={{ color: tx.amount >= 0 ? '#2dd4bf' : '#ff7a59', fontWeight: 600 }}
               >
                 {tx.amount >= 0 ? '+' : ''}
-                {fmtAmount(tx.amount)}
+                {fmtAmount(tx.amount, { exact: tx.amountStr, scale })}
               </div>
             </div>
           </div>
         );
       },
-    [items],
+    [items, scale],
   );
 
   if (error) return <div className="hud-profile-error">{error}</div>;

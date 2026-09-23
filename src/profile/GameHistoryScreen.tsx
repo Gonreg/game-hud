@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useHudConfig } from '../context/HudProvider';
 import { useHudResource } from '../context/useHudResource';
 import { formatWhen } from '../format/datetime';
-import { fmtAmount } from '../format/money';
+import { exactSign, fmtAmount, subExact } from '../format/money';
 import { Skeleton } from '../primitives/Skeleton';
 import { IconBall, IconX } from '../primitives/icons';
 
@@ -12,6 +13,7 @@ import { IconBall, IconX } from '../primitives/icons';
  */
 export function GameHistoryScreen() {
   const { t, i18n } = useTranslation();
+  const { scale } = useHudConfig();
   const { data, loading, error } = useHudResource('gameHistory', (a) => a.getGameHistory!(24));
   const locale = i18n.language || 'en';
 
@@ -23,7 +25,13 @@ export function GameHistoryScreen() {
     <div className="hud-profile-list">
       {data.map((r) => {
         const net = r.payout - r.bet;
-        const win = net > 0;
+        // Единственная арифметика над деньгами в кабинете. В double она врёт
+        // при scale > 9: ставка и выплата по ~1 ETH, разные на пару wei,
+        // вычитаются в ноль или в погрешность, и выигрыш рисуется проигрышем.
+        // Поэтому при обеих точных строках и сумма, и её знак — из bigint.
+        const netStr = subExact(r.payoutStr, r.betStr);
+        const sign = netStr != null ? exactSign(netStr) : Math.sign(net);
+        const win = sign > 0;
         const statusLabel = t(`history.status.${r.status}`, { defaultValue: r.status });
         const when = formatWhen(r.createdAt, locale);
         return (
@@ -37,10 +45,10 @@ export function GameHistoryScreen() {
             </div>
             <div
               className="hud-profile-list__hint"
-              style={{ color: net > 0 ? '#2dd4bf' : net < 0 ? '#ff7a59' : undefined, fontWeight: 600 }}
+              style={{ color: sign > 0 ? '#2dd4bf' : sign < 0 ? '#ff7a59' : undefined, fontWeight: 600 }}
             >
-              {net > 0 ? '+' : ''}
-              {fmtAmount(net)}
+              {sign > 0 ? '+' : ''}
+              {fmtAmount(net, { exact: netStr, scale })}
             </div>
           </div>
         );
