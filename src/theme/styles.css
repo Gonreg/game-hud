@@ -184,10 +184,21 @@
 }
 
 /* accent list row (например, рефералы: подсвечена, с подсказкой) */
-.hud-profile-list__row--accent {
-  background: linear-gradient(90deg, rgba(0, 168, 232, 0.16), rgba(0, 168, 232, 0.05));
-  border-radius: 12px;
-  box-shadow: inset 3px 0 0 #00a8e8;
+/* Подсветка строки — плашка с рамкой, а не полоса слева.
+   Прежняя полоса была внутренней тенью на скруглённой строке и загибалась
+   дугой, а базовое правило строки (ниже по файлу, та же сила селектора)
+   перебивало фон, отступы и разделитель. Отсюда двойной класс: он сильнее
+   базового независимо от порядка. Отрицательные поля выносят плашку за
+   край списка ровно на внутренний отступ — значок и подпись остаются на
+   одной вертикали с соседними строками. */
+.hud-profile-list__row.hud-profile-list__row--accent {
+  width: calc(100% + 28px);
+  margin: 6px -14px;
+  padding: 16px 14px;
+  background: rgba(0, 168, 232, 0.08);
+  border: 1px solid rgba(0, 168, 232, 0.32);
+  border-radius: 14px;
+  box-shadow: none;
 }
 .hud-profile-list__row--accent .hud-profile-list__hint {
   color: #00a8e8;
