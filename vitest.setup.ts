@@ -2,8 +2,10 @@ import '@testing-library/jest-dom/vitest';
 
 // Часовой пояс закреплён: legacyMoney.test.tsx сверяет историю байт в байт с
 // эталоном, снятым в UTC+7, а время там выводится в поясе машины. На машине в
-// другом поясе те же суммы «падали» на часах, а не на деньгах.
-process.env.TZ = 'Asia/Novosibirsk';
+// другом поясе те же суммы «падали» на часах, а не на деньгах. Через globalThis:
+// типов Node в проекте нет, а тянуть их ради одной строки незачем.
+(globalThis as unknown as { process: { env: Record<string, string> } }).process.env.TZ =
+  'Asia/Novosibirsk';
 
 // jsdom не реализует scrollIntoView вовсе (это отсутствующий метод, а не пустая
 // заглушка), а WalletScreen зовёт его при открытии — без этого любой тест,
