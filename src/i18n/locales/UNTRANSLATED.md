@@ -110,3 +110,7 @@ basketball `'ru'`. Убрав эти ключи, мы бы показали ис
 Мн. число не склоняем (`{{days}} дн.`, «Фриспины: {{left}}»): формы `_one/_few/_many`
 разошлись бы по набору ключей между языками, а тест словарей требует одинаковый
 набор у всех десяти.
+
+1.5.1: `bonus.wager_earned*`, `bonus.wager_deposit_needed_min`, `bonus.wallet_need_deposit*`,
+`bonus.rules_deposit_required_min` и `profile.menu_referrals_hint_rate` — тоже только `en`/`ru`,
+остальным английский по тому же правилу.

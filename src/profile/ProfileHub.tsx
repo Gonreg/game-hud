@@ -6,6 +6,7 @@ import { useHudResource } from '../context/useHudResource';
 import { useHudWallet } from '../wallet/useHudWallet';
 import { fmtAmount } from '../format/money';
 import { PromoCarousel } from '../bonus/PromoCarousel';
+import { useBonuses } from '../bonus/useBonuses';
 import {
   IconBell,
   IconChart,
@@ -36,6 +37,10 @@ export function ProfileHub() {
   // бэке не хранится (me.walletAddress всегда пуст) — читаем живой адрес,
   // как это делает WalletScreen.
   const walletAddress = useHudWallet().address;
+  // Настоящий процент реферальных, если бэк его называет (getBonuses). Без
+  // него — общий текст библиотеки: у игр с агентской программой «до 30%»
+  // верно, а у молота базовая ставка 10%, и обещать 30% нельзя.
+  const refRate = useBonuses().data?.referral?.ratePercent;
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const photo = tgUser?.photo_url;
   const name = me?.displayName || tgUser?.first_name || '?';
@@ -66,7 +71,10 @@ export function ProfileHub() {
       id: 'referrals',
       Icon: IconUsers,
       label: t('profile.menu_referrals'),
-      hint: t('profile.menu_referrals_hint'),
+      hint:
+        refRate != null
+          ? t('profile.menu_referrals_hint_rate', { rate: refRate })
+          : t('profile.menu_referrals_hint'),
       accent: true,
     },
     { id: 'stats', Icon: IconChart, label: t('profile.menu_stats') },

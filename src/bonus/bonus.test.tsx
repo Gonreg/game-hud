@@ -92,10 +92,10 @@ describe('BonusSheet', () => {
 
   it('отыграно без депозита — зовёт пополнить и ведёт в кассу', async () => {
     renderWithHud(<BonusSheet />, {
-      adapter: withBonuses({ wagering: { remaining: 0, total: 72, held: 1.8, hasDeposit: false } }),
+      adapter: withBonuses({ wagering: { remaining: 0, total: 0, held: 0, earned: 1.8, hasDeposit: false } }),
     });
-    await screen.findByText(/Wagering complete! Top up your balance and 1.80 becomes withdrawable/);
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    await screen.findByText('Wagered, awaiting a top-up: 1.80');
+    expect(screen.getByText(/Top up your balance and it becomes withdrawable/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Top up' }));
     expect(useHudStore.getState()).toMatchObject({
       bonusOpen: false,
@@ -224,5 +224,56 @@ describe('касса и новые условия', () => {
     renderWithHud(<WalletScreen />, { adapter });
     await waitFor(() => expect(adapter.getMe).toHaveBeenCalled());
     expect(screen.queryByText(/top up your balance to withdraw the bonus/)).toBeNull();
+  });
+});
+
+describe('1.5.1: заработанный бонус, минимальный депозит, реальный процент друзей', () => {
+  beforeEach(() =>
+    useHudStore.setState({ ...useHudStore.getInitialState(), open: true, screen: 'hub', bonusOpen: true }),
+  );
+
+  const EARNED: BonusOverview = {
+    wagering: { remaining: 60, total: 72, held: 1.8, earned: 5, hasDeposit: false },
+    minQualifyingDeposit: 5,
+    expiryDays: 14,
+  };
+
+  it('заработанное показано отдельно от текущего отыгрыша и зовёт пополнить от минимума', async () => {
+    renderWithHud(<BonusSheet />, { adapter: withBonuses(EARNED) });
+    await screen.findByText('Wagered, awaiting a top-up: 5.00');
+    expect(screen.getByText(/Top up at least 5.00 GRAM and it becomes withdrawable/)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '16'); // (72 − 60) / 72
+    expect(screen.getByText('60.00 left to wager')).toBeInTheDocument();
+  });
+
+  it('только заработанное, без активного отыгрыша — полосы нет, раздел есть', async () => {
+    renderWithHud(<BonusSheet />, {
+      adapter: withBonuses({ ...EARNED, wagering: { remaining: 0, total: 0, held: 0, earned: 5, hasDeposit: false } }),
+    });
+    await screen.findByText('Wagered, awaiting a top-up: 5.00');
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+
+  it('условия называют минимальный депозит и говорят про ранее выданные подарки', async () => {
+    renderWithHud(<BonusSheet />, { adapter: withBonuses(EARNED) });
+    await screen.findByText('Wagered, awaiting a top-up: 5.00');
+    await userEvent.click(screen.getByRole('button', { name: 'info' }));
+    const rules = screen.getAllByRole('dialog').at(-1)!;
+    expect(rules).toHaveTextContent('at least one top-up of 5.00 GRAM or more');
+    expect(rules).toHaveTextContent('including gifts received earlier');
+  });
+
+  it('подсказка реферального пункта — реальный процент из getBonuses, а не «up to 30%»', async () => {
+    renderWithHud(<ProfileHub />, { adapter: withBonuses({ referral: { ratePercent: 10 } }) });
+    await screen.findByText('10% of losses');
+    expect(screen.queryByText('up to 30%')).toBeNull();
+  });
+
+  it('касса: подсказка про депозит — по заработанному, с минимумом', async () => {
+    useHudStore.setState({ screen: 'wallet', bonusOpen: false });
+    const adapter = withBonuses(EARNED);
+    adapter.getMe = vi.fn(async () => ({ ...FAKE_ME, bonusBalance: 6.8, wagerRemaining: 60, hasDeposit: false }));
+    renderWithHud(<WalletScreen />, { adapter });
+    await screen.findByText('5.00 wagered — top up at least 5.00 GRAM to withdraw it');
   });
 });

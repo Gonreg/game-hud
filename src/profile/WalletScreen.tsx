@@ -9,7 +9,7 @@ import { InfoPopover } from '../primitives/InfoPopover';
 import { Skeleton } from '../primitives/Skeleton';
 import { TonConnectButton } from '../wallet/tonconnectHooks';
 import { useHudWallet } from '../wallet/useHudWallet';
-import { bonusRulesText, useBonuses } from '../bonus/useBonuses';
+import { bonusRulesText, minDepositText, useBonuses } from '../bonus/useBonuses';
 import type { Withdrawal } from '../adapter/types';
 
 const NANO_PER_TON = 1_000_000_000n;
@@ -64,14 +64,30 @@ export function WalletScreen() {
         b,
         currency,
         b.freeSpins ? fmtAmount(b.freeSpins.stake, { exact: b.freeSpins.stakeStr, scale }) : '',
+        scale,
       )
     : t('wallet.bonus_wager_info');
   // Оборот отыгран, удержание есть, а депозита не было: бонус ждёт первого
   // пополнения. Молчать здесь нельзя — «отыграно, но не выводится» без
   // объяснения выглядит как обман. hasDeposit необязательное: бэк без правила
   // депозита его не шлёт, и строки нет.
-  const needDeposit =
-    me.data?.hasDeposit === false && wagerLeft === 0 && (me.data?.bonusBalance ?? 0) > 0;
+  //
+  // Бэк с отдельным счётчиком заработанного (getBonuses → wagering.earned)
+  // говорит точно: сколько отыграно и от какой суммы пополнение. Без него —
+  // прежняя догадка по Me: удержание есть, остатка нет, депозита не было.
+  const earnedW = b?.wagering?.earned != null ? b.wagering : null;
+  const min = minDepositText(b, scale);
+  let needDeposit: string | null = null;
+  if (earnedW) {
+    if ((earnedW.earned ?? 0) > 0 && !earnedW.hasDeposit) {
+      const amount = fmtAmount(earnedW.earned, { exact: earnedW.earnedStr, scale });
+      needDeposit = min
+        ? t('bonus.wallet_need_deposit_min', { amount, min, currency })
+        : t('bonus.wallet_need_deposit', { amount });
+    }
+  } else if (me.data?.hasDeposit === false && wagerLeft === 0 && (me.data?.bonusBalance ?? 0) > 0) {
+    needDeposit = t('wallet.bonus_need_deposit');
+  }
 
   async function deposit() {
     if (!address) {
@@ -161,9 +177,7 @@ export function WalletScreen() {
               {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft, { exact: me.data?.wagerRemainingStr, scale }) })}
             </div>
           )}
-          {needDeposit && (
-            <div className="hud-profile-promo__sub">{t('wallet.bonus_need_deposit')}</div>
-          )}
+          {needDeposit && <div className="hud-profile-promo__sub">{needDeposit}</div>}
           {expiresAt && (
             <div className="hud-profile-promo__sub">
               {t('wallet.bonus_expires', { date: expiresAt })}

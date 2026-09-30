@@ -9,7 +9,13 @@ import { Skeleton } from '../primitives/Skeleton';
 import { useHudStore } from '../store/hudStore';
 import type { BonusOverview } from '../adapter/types';
 import { GiftIcon3D } from './GiftIcon3D';
-import { bonusRulesText, freeSpinsActive, useBonuses, wageringActive } from './useBonuses';
+import {
+  bonusRulesText,
+  freeSpinsActive,
+  minDepositText,
+  useBonuses,
+  wageringActive,
+} from './useBonuses';
 
 /**
  * Шит «Бонусы»: все бонусные активности игрока по разделам — фриспины, бонус
@@ -73,7 +79,7 @@ function BonusSheetBody({ onClose }: { onClose: () => void }) {
           <span id="hud-bonus-sheet-title" className="hud-sheet__title">
             {t('bonus.title')}
           </span>
-          {b && <InfoPopover text={bonusRulesText(t, b, currency, stake)} />}
+          {b && <InfoPopover text={bonusRulesText(t, b, currency, stake, scale)} />}
         </div>
         <button
           type="button"
@@ -136,7 +142,16 @@ function BonusSheetBody({ onClose }: { onClose: () => void }) {
         </section>
       )}
 
-      {w && <WageringSection w={w} money={money} lang={lang} onDeposit={goDeposit} />}
+      {w && (
+        <WageringSection
+          w={w}
+          money={money}
+          lang={lang}
+          min={minDepositText(b, scale)}
+          currency={currency}
+          onDeposit={goDeposit}
+        />
+      )}
 
       {b?.referral && (
         <section
@@ -164,22 +179,36 @@ function WageringSection({
   w,
   money,
   lang,
+  min,
+  currency,
   onDeposit,
 }: {
   w: Wagering;
   money: (v: number, exact?: string) => string;
   lang: string;
+  /** Минимальное пополнение, открывающее вывод («5.00»), или null. */
+  min: string | null;
+  currency: string;
   onDeposit: () => void;
 }) {
   const { t } = useTranslation();
+  // Две разные вещи в одном разделе. Текущий отыгрыш — удержание с остатком
+  // оборота и сроком. Заработанное — уже отыгранные деньги, которые ждут
+  // только пополнения: не сгорают и от текущего отыгрыша не зависят.
+  const earned = w.earned ?? 0;
+  const active = w.remaining > 0 || w.held > 0;
   // Прогресс — от назначенного оборота. Знаменателя нет (бэк его не знает) —
   // полосы нет, остаётся строка с остатком: рисовать выдуманный процент нельзя.
   const done =
-    w.total > 0 ? Math.min(1, Math.max(0, (w.total - w.remaining) / w.total)) : null;
+    active && w.total > 0 ? Math.min(1, Math.max(0, (w.total - w.remaining) / w.total)) : null;
   const pct = done == null ? null : Math.floor(done * 100);
   const cleared = w.remaining <= 0;
-  // Отыгранное удержание не сгорает (ждёт депозита) — срок про него не пишем.
-  const expires = cleared ? null : formatDeadline(w.expiresAt, lang);
+  const expires = active && !cleared ? formatDeadline(w.expiresAt, lang) : null;
+  // Бэк без отдельного счётчика заработанного (earned нет): отыгранное, но
+  // не выведенное удержание приходит как held при нулевом остатке.
+  const legacyWaiting = w.earned == null && cleared && w.held > 0 && !w.hasDeposit;
+  const waiting = (earned > 0 && !w.hasDeposit) || legacyWaiting;
+  const waitingAmount = earned > 0 ? money(earned, w.earnedStr) : money(w.held, w.heldStr);
   return (
     <section
       className="hud-sheet__group hud-bonus-section hud-bonus-section--wager"
@@ -213,15 +242,23 @@ function WageringSection({
           {t('bonus.wager_left', { amount: money(w.remaining, w.remainingStr) })}
         </div>
       )}
-      {w.held > 0 && (
+      {w.held > 0 && !legacyWaiting && (
         <div className="hud-bonus-section__line">
           {t('bonus.wager_held', { amount: money(w.held, w.heldStr) })}
         </div>
       )}
-      {cleared && !w.hasDeposit ? (
+      {expires && (
+        <div className="hud-bonus-section__line">{t('bonus.wager_expires', { date: expires })}</div>
+      )}
+      {waiting ? (
         <>
+          <div className="hud-bonus-section__big hud-bonus-section__big--earned">
+            {t('bonus.wager_earned', { amount: waitingAmount })}
+          </div>
           <div className="hud-bonus-section__text hud-bonus-section__text--accent">
-            {t('bonus.wager_done_need_deposit', { amount: money(w.held, w.heldStr) })}
+            {min
+              ? t('bonus.wager_earned_cta_min', { min, currency })
+              : t('bonus.wager_earned_cta')}
           </div>
           <button type="button" className="hud-profile-btn hud-profile-btn--primary" onClick={onDeposit}>
             {t('bonus.deposit_cta')}
@@ -231,11 +268,12 @@ function WageringSection({
         <div
           className={`hud-bonus-deposit-status${w.hasDeposit ? ' hud-bonus-deposit-status--ok' : ''}`}
         >
-          {w.hasDeposit ? t('bonus.wager_deposit_ok') : t('bonus.wager_deposit_needed')}
+          {w.hasDeposit
+            ? t('bonus.wager_deposit_ok')
+            : min
+              ? t('bonus.wager_deposit_needed_min', { min, currency })
+              : t('bonus.wager_deposit_needed')}
         </div>
-      )}
-      {expires && (
-        <div className="hud-bonus-section__line">{t('bonus.wager_expires', { date: expires })}</div>
       )}
     </section>
   );

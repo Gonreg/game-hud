@@ -3,6 +3,7 @@ import { useHudAdapter } from '../context/HudProvider';
 import { useHudResource, type HudResource } from '../context/useHudResource';
 import { useHudStore } from '../store/hudStore';
 import type { BonusOverview } from '../adapter/types';
+import { fmtAmount } from '../format/money';
 
 /**
  * Бонусы игрока через адаптер. `supported` — есть ли у бэка механика вообще
@@ -30,7 +31,16 @@ export function freeSpinsActive(b: BonusOverview | null | undefined): boolean {
 /** Есть что отыгрывать или отыгранное ждёт депозита. */
 export function wageringActive(b: BonusOverview | null | undefined): boolean {
   const w = b?.wagering;
-  return Boolean(w && (w.held > 0 || w.remaining > 0));
+  return Boolean(w && (w.held > 0 || w.remaining > 0 || (w.earned ?? 0) > 0));
+}
+
+/** Минимальное пополнение для текстов («от 5.00 GRAM») или null, если его нет. */
+export function minDepositText(
+  b: BonusOverview | null | undefined,
+  scale: number | undefined,
+): string | null {
+  const m = b?.minQualifyingDeposit;
+  return m != null && m > 0 ? fmtAmount(m, { scale }) : null;
 }
 
 /**
@@ -39,7 +49,13 @@ export function wageringActive(b: BonusOverview | null | undefined): boolean {
  * фриспины нет у игры без фриспинов, про срок — без срока. Числа берутся из
  * бэка, поэтому смена окружения не расходится с текстом.
  */
-export function bonusRulesText(t: TFunction, b: BonusOverview, currency: string, stake: string): string {
+export function bonusRulesText(
+  t: TFunction,
+  b: BonusOverview,
+  currency: string,
+  stake: string,
+  scale?: number,
+): string {
   const parts: string[] = [t('bonus.rules_intro')];
   if (b.freeSpins) {
     parts.push(
@@ -60,7 +76,12 @@ export function bonusRulesText(t: TFunction, b: BonusOverview, currency: string,
     );
   }
   parts.push(t('bonus.rules_turnover'));
-  parts.push(t('bonus.rules_deposit_required'));
+  const min = minDepositText(b, scale);
+  parts.push(
+    min
+      ? t('bonus.rules_deposit_required_min', { min, currency })
+      : t('bonus.rules_deposit_required'),
+  );
   if (b.expiryDays && b.expiryDays > 0) {
     parts.push(t('bonus.rules_expiry', { days: b.expiryDays }));
   }

@@ -1491,3 +1491,4 @@
   transition: width 0.2s, background 0.2s;
 }
 .hud-promo-carousel__dot--on::before { width: 16px; background: var(--hud-gold); }
+.hud-bonus-section__big--earned { font-size: 17px; color: var(--hud-gold); }

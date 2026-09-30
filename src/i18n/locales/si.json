@@ -31,6 +31,7 @@
     "menu_language": "භාෂාව",
     "menu_help": "සහාය",
     "menu_referrals_hint": "30% දක්වා",
+    "menu_referrals_hint_rate": "{{rate}}% of losses",
     "quick_deposit": "ඉහළට පුරවන්න",
     "quick_withdraw": "ආපසු ගන්න"
   },
@@ -217,7 +218,6 @@
     "wager_held": "Bonus money held: {{amount}}",
     "wager_deposit_ok": "✓ Top-up done",
     "wager_deposit_needed": "At least one top-up with real money is required — without it bonus money can't be withdrawn",
-    "wager_done_need_deposit": "Wagering complete! Top up your balance and {{amount}} becomes withdrawable. Until then it won't expire.",
     "wager_expires": "Unwagered bonus expires {{date}}",
     "referral_title": "Referral program",
     "referral_text": "Invite friends and get {{rate}}% of their losses — straight to your main balance.",
@@ -234,7 +234,14 @@
     "rules_free_spins": "Free spins: {{total}} free bets of {{stake}} {{currency}}. You pick the side, we pay the stake. Free spin winnings are credited as bonus money and need turnover of ×{{mult}} the winnings.",
     "rules_deposit": "The +{{percent}}% top-up bonus needs turnover of ×{{mult}} the bonus.",
     "rules_turnover": "Wagering means bet turnover: the total of all your bets, winning and losing. Cancelled bets and the free spins themselves don't count.",
-    "rules_deposit_required": "Bonus money becomes withdrawable once the turnover is reached AND you have at least one top-up with real money. If the turnover is reached before your first top-up, the bonus doesn't expire — it waits for that top-up.",
-    "rules_expiry": "Unused free spins and unwagered bonus expire {{days}} days after they are credited. Withdrawing your own money before wagering is complete forfeits the unwagered bonus."
+    "rules_deposit_required": "Bonus money becomes withdrawable once the turnover is reached AND you have at least one top-up with real money. This applies to all bonus money, including gifts received earlier. If the turnover is reached before that top-up, the wagered bonus doesn't expire — it waits for the top-up.",
+    "rules_expiry": "Unused free spins and unwagered bonus expire {{days}} days after they are credited. Withdrawing your own money before wagering is complete forfeits the unwagered bonus.",
+    "wager_earned": "Wagered, awaiting a top-up: {{amount}}",
+    "wager_earned_cta": "Top up your balance and it becomes withdrawable. Until then it won't expire.",
+    "wager_earned_cta_min": "Top up at least {{min}} {{currency}} and it becomes withdrawable. Until then it won't expire.",
+    "wager_deposit_needed_min": "A top-up of at least {{min}} {{currency}} with real money is required — without it bonus money can't be withdrawn",
+    "wallet_need_deposit": "{{amount}} wagered — top up your balance to withdraw it",
+    "wallet_need_deposit_min": "{{amount}} wagered — top up at least {{min}} {{currency}} to withdraw it",
+    "rules_deposit_required_min": "Bonus money becomes withdrawable once the turnover is reached AND you have at least one top-up of {{min}} {{currency}} or more with real money. This applies to all bonus money, including gifts received earlier. If the turnover is reached before that top-up, the wagered bonus doesn't expire — it waits for the top-up."
   }
 }
