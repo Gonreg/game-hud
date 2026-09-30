@@ -9,6 +9,7 @@ import { InfoPopover } from '../primitives/InfoPopover';
 import { Skeleton } from '../primitives/Skeleton';
 import { TonConnectButton } from '../wallet/tonconnectHooks';
 import { useHudWallet } from '../wallet/useHudWallet';
+import { bonusRulesText, useBonuses } from '../bonus/useBonuses';
 import type { Withdrawal } from '../adapter/types';
 
 const NANO_PER_TON = 1_000_000_000n;
@@ -16,8 +17,12 @@ const NANO_PER_TON = 1_000_000_000n;
 export function WalletScreen() {
   const { t, i18n } = useTranslation();
   const adapter = useHudAdapter();
-  const { scale } = useHudConfig();
+  const { scale, currency } = useHudConfig();
   const wallet = useHudWallet();
+  // Условия бонусов собираются из того, что реально включено у игры
+  // (getBonuses): фриспины, процент к пополнению, множители, срок, правило
+  // депозита. Бэк без getBonuses — прежний общий текст.
+  const bonuses = useBonuses();
   const address = wallet.address;
   const me = useHudResource('me', (a) => a.getMe());
   const hasWithdrawalsList = typeof adapter.getWithdrawals === 'function';
@@ -52,6 +57,21 @@ export function WalletScreen() {
   // Срок сгорания. Поля нет — молчим: бонус бессрочный или бэк срока не знает.
   // Неразборчивая строка тоже молчит, а не показывает «Invalid Date».
   const expiresAt = formatDeadline(me.data?.bonusExpiresAt, i18n.language || 'en');
+  const b = bonuses.data;
+  const rulesText = b
+    ? bonusRulesText(
+        t,
+        b,
+        currency,
+        b.freeSpins ? fmtAmount(b.freeSpins.stake, { exact: b.freeSpins.stakeStr, scale }) : '',
+      )
+    : t('wallet.bonus_wager_info');
+  // Оборот отыгран, удержание есть, а депозита не было: бонус ждёт первого
+  // пополнения. Молчать здесь нельзя — «отыграно, но не выводится» без
+  // объяснения выглядит как обман. hasDeposit необязательное: бэк без правила
+  // депозита его не шлёт, и строки нет.
+  const needDeposit =
+    me.data?.hasDeposit === false && wagerLeft === 0 && (me.data?.bonusBalance ?? 0) > 0;
 
   async function deposit() {
     if (!address) {
@@ -129,7 +149,7 @@ export function WalletScreen() {
           <div className="hud-profile-promo__title">{t('wallet.promo_title')}</div>
           <div className="hud-profile-promo__sub">
             {t('wallet.bonus_note')}
-            <InfoPopover text={t('wallet.bonus_wager_info')} />
+            <InfoPopover text={rulesText} />
           </div>
           {/* Прогресс показываем, только когда бэк реально считает отыгрыш и он
               не закончен. Поле необязательное: у бэка без этой механики его нет
@@ -140,6 +160,9 @@ export function WalletScreen() {
             <div className="hud-profile-promo__sub">
               {t('wallet.bonus_wager_left', { amount: fmtAmount(wagerLeft, { exact: me.data?.wagerRemainingStr, scale }) })}
             </div>
+          )}
+          {needDeposit && (
+            <div className="hud-profile-promo__sub">{t('wallet.bonus_need_deposit')}</div>
           )}
           {expiresAt && (
             <div className="hud-profile-promo__sub">

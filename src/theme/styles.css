@@ -1307,3 +1307,187 @@
   font: 500 13px/1.3 var(--hud-sans);
   color: var(--hud-ink-soft);
 }
+
+/* ------------------------------------------------------------------------
+   Часть 7. Бонусы (1.5.0): кнопка с объёмным подарком, шит «Бонусы»,
+   промо-карусель кабинета.
+   ------------------------------------------------------------------------ */
+
+/* Кнопка — под аватаром кабинета и шестерёнкой, по центру этой пары: аватар
+   стоит в 16px от правого края, шестерёнка ещё на 42px левее, у обоих 32px.
+   Центр пары — 53px от края; кнопка 44px ⇒ right 31px. Верх — на 40px ниже
+   строки чипов (16px отступа + 32px чипа − 8px: подарок «приподнят» над
+   кнопкой и визуально добирает зазор). */
+.hud-bonus-chip {
+  position: absolute;
+  top: calc(max(var(--hud-safe-top), 78px) + 56px);
+  right: calc(31px + var(--hud-safe-right));
+  z-index: 13;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 211, 90, 0.55);
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 138, 166, 0.45), transparent 60%),
+    radial-gradient(circle at 50% 60%, #3a1f5c, #1a1030 75%);
+  box-shadow: 0 6px 18px rgba(255, 61, 127, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.1s ease-out;
+}
+.hud-bonus-chip:active { transform: scale(0.92); }
+.hud-bonus-chip:focus-visible { outline: 2px solid var(--hud-gold); outline-offset: 2px; }
+.hud-bonus-chip__icon {
+  width: 38px;
+  height: 38px;
+  transform: translateY(-3px);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  transform-origin: 50% 80%;
+}
+/* Пока есть фриспины — подарок раз в несколько секунд «подпрыгивает»:
+   движение заметнее цвета, но не мельтешит постоянно. */
+.hud-bonus-chip--hot .hud-bonus-chip__icon { animation: hud-gift-wiggle 3.6s ease-in-out infinite; }
+@keyframes hud-gift-wiggle {
+  0%, 70%, 100% { transform: translateY(-3px) rotate(0) scale(1); }
+  76% { transform: translateY(-6px) rotate(-10deg) scale(1.08); }
+  82% { transform: translateY(-5px) rotate(9deg) scale(1.06); }
+  88% { transform: translateY(-4px) rotate(-6deg) scale(1.03); }
+  94% { transform: translateY(-3px) rotate(3deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-bonus-chip--hot .hud-bonus-chip__icon { animation: none; }
+}
+.hud-bonus-chip__badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #ff8a6b, #ff3d7f);
+  color: #fff;
+  font: 800 10px/18px var(--hud-sans);
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--hud-bg-0);
+}
+
+/* Шит поверх кабинета (у оверлея кабинета z-index 1000) и поверх игры:
+   fixed, чтобы не зависеть от позиционированного предка. */
+.hud-bonus-backdrop { position: fixed; z-index: 1100; }
+.hud-bonus-backdrop .hud-sheet { max-width: 520px; }
+.hud-bonus-sheet {
+  display: grid;
+  gap: 12px;
+  max-height: min(80vh, 720px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-family: var(--hud-sans);
+}
+.hud-bonus-sheet__title-row { display: flex; align-items: center; gap: 8px; }
+.hud-bonus-section { border: 1px solid rgba(255, 255, 255, 0.06); }
+.hud-bonus-section--spins { background: linear-gradient(135deg, rgba(255, 61, 127, 0.16), rgba(160, 107, 255, 0.1)); }
+.hud-bonus-section--deposit { background: linear-gradient(135deg, rgba(245, 181, 49, 0.16), rgba(0, 168, 232, 0.08)); }
+.hud-bonus-section--wager { background: linear-gradient(135deg, rgba(45, 212, 191, 0.12), rgba(200, 255, 90, 0.06)); }
+.hud-bonus-section--ref { background: linear-gradient(135deg, rgba(0, 168, 232, 0.14), rgba(45, 212, 191, 0.06)); }
+.hud-bonus-section__big { font: 800 20px/1.2 var(--hud-display); color: var(--hud-ink); }
+.hud-bonus-section__line { font-size: 13px; color: var(--hud-ink-soft); }
+.hud-bonus-section__text { font-size: 13px; line-height: 1.45; color: var(--hud-ink-soft); }
+.hud-bonus-section__text--accent { color: var(--hud-gold); font-weight: 600; }
+.hud-bonus-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.hud-bonus-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--hud-teal), var(--hud-lime));
+  transition: width 0.4s ease-out;
+}
+.hud-bonus-deposit-status { font-size: 12px; font-weight: 600; color: var(--hud-coral); }
+.hud-bonus-deposit-status--ok { color: var(--hud-win); }
+
+/* Промо-карусель кабинета: над строкой балансов, те же поля 24px. */
+.hud-promo-carousel { margin: 0 24px 16px; }
+.hud-promo-carousel__track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.hud-promo-carousel__track::-webkit-scrollbar { display: none; }
+.hud-promo-card {
+  appearance: none;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(245, 181, 49, 0.35);
+  background: linear-gradient(135deg, rgba(245, 181, 49, 0.18), rgba(0, 168, 232, 0.1));
+  color: var(--hud-ink);
+  font-family: var(--hud-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.08s ease-out;
+}
+.hud-promo-card:active { transform: scale(0.985); }
+.hud-promo-card:focus-visible { outline: 2px solid var(--hud-gold); outline-offset: 2px; }
+.hud-promo-card--spins {
+  border-color: rgba(255, 122, 160, 0.45);
+  background: linear-gradient(135deg, rgba(255, 61, 127, 0.28), rgba(160, 107, 255, 0.18));
+}
+.hud-promo-card--referral {
+  border-color: rgba(0, 168, 232, 0.45);
+  background: linear-gradient(135deg, rgba(0, 168, 232, 0.22), rgba(45, 212, 191, 0.12));
+}
+.hud-promo-card__art { flex: 0 0 56px; height: 56px; display: grid; place-items: center; }
+.hud-promo-card__percent { font: 800 20px/1 var(--hud-display); color: #f5d57e; text-shadow: 0 2px 8px rgba(245, 181, 49, 0.35); }
+.hud-promo-card__users {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 168, 232, 0.2);
+  color: #00a8e8;
+}
+.hud-promo-card__users svg { width: 24px; height: 24px; }
+.hud-promo-card__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.hud-promo-card__title { font: 800 16px/1.2 var(--hud-display); color: #fff; }
+.hud-promo-card--deposit .hud-promo-card__title { color: #f5d57e; }
+.hud-promo-card__sub { font-size: 12.5px; line-height: 1.35; color: var(--hud-ink-soft); }
+.hud-promo-card__chev { color: var(--hud-ink-dim); display: inline-flex; }
+.hud-promo-carousel__dots { display: flex; justify-content: center; gap: 2px; margin-top: 6px; }
+/* Кнопка-точка крупнее самой точки: в неё надо попасть пальцем. */
+.hud-promo-carousel__dot {
+  appearance: none;
+  width: 22px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.hud-promo-carousel__dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  transition: width 0.2s, background 0.2s;
+}
+.hud-promo-carousel__dot--on::before { width: 16px; background: var(--hud-gold); }

@@ -15,6 +15,7 @@ import { HelpScreen } from './HelpScreen';
 import { LegalScreen } from './LegalScreen';
 import { LegalFooter } from './LegalFooter';
 import { IconArrowLeft, IconClose } from '../primitives/icons';
+import { BonusSheet } from '../bonus/BonusSheet';
 
 const TITLE_KEYS: Record<HudScreen, string> = {
   hub: 'profile.title',
@@ -51,55 +52,62 @@ export function ProfileShell() {
     };
   }, [open, screen, close, setScreen]);
 
-  if (!open) return null;
-
+  // Шит «Бонусы» живёт здесь, а не в кабинете: открывается и поверх игры
+  // (BonusButton), и поверх кабинета (карусель). Каждая игра уже монтирует
+  // ProfileShell, поэтому шит появляется у всех без правок в играх. Один и тот
+  // же узел в обоих состояниях кабинета — открытие кабинета его не пересоздаёт.
   return (
-    <div className="hud-profile-overlay">
-      <header className="hud-profile-header">
-        {screen === 'hub' ? (
-          <div className="hud-profile-header__spacer" />
-        ) : (
-          <button
-            type="button"
-            className="hud-profile-header__back"
-            onClick={() => setScreen('hub')}
-            aria-label={t('common.back')}
-          >
-            <IconArrowLeft />
-          </button>
-        )}
-        <div className="hud-profile-header__title">{t(TITLE_KEYS[screen])}</div>
-        <button
-          type="button"
-          className="hud-profile-header__back"
-          onClick={close}
-          aria-label={t('common.close')}
-        >
-          <IconClose />
-        </button>
-      </header>
-      <div className="hud-profile-body">
-        <div className="hud-profile-screen" key={screen}>
-          {screen === 'hub' && <ProfileHub />}
-          {screen === 'wallet' && (renderWallet ? renderWallet() : <WalletScreen />)}
-          {screen === 'history' &&
-            (typeof adapter.getTransactions === 'function' ? (
-              <HistoryScreen />
+    <>
+      <BonusSheet />
+      {open && (
+        <div className="hud-profile-overlay">
+          <header className="hud-profile-header">
+            {screen === 'hub' ? (
+              <div className="hud-profile-header__spacer" />
             ) : (
-              <GameHistoryScreen />
-            ))}
-          {screen === 'referrals' && <ReferralsScreen />}
-          {screen === 'stats' && <StatsScreen />}
-          {screen === 'leaderboard' && <LeaderboardScreen />}
-          {screen === 'notifications' && <NotificationsScreen />}
-          {screen === 'language' && <LanguageScreen />}
-          {screen === 'help' && <HelpScreen />}
-          {screen === 'terms' && <LegalScreen doc="terms" />}
-          {screen === 'privacy' && <LegalScreen doc="privacy" />}
-          {screen === 'offer' && <LegalScreen doc="offer" />}
-          {!LEGAL_SCREENS.has(screen) && <LegalFooter />}
+              <button
+                type="button"
+                className="hud-profile-header__back"
+                onClick={() => setScreen('hub')}
+                aria-label={t('common.back')}
+              >
+                <IconArrowLeft />
+              </button>
+            )}
+            <div className="hud-profile-header__title">{t(TITLE_KEYS[screen])}</div>
+            <button
+              type="button"
+              className="hud-profile-header__back"
+              onClick={close}
+              aria-label={t('common.close')}
+            >
+              <IconClose />
+            </button>
+          </header>
+          <div className="hud-profile-body">
+            <div className="hud-profile-screen" key={screen}>
+              {screen === 'hub' && <ProfileHub />}
+              {screen === 'wallet' && (renderWallet ? renderWallet() : <WalletScreen />)}
+              {screen === 'history' &&
+                (typeof adapter.getTransactions === 'function' ? (
+                  <HistoryScreen />
+                ) : (
+                  <GameHistoryScreen />
+                ))}
+              {screen === 'referrals' && <ReferralsScreen />}
+              {screen === 'stats' && <StatsScreen />}
+              {screen === 'leaderboard' && <LeaderboardScreen />}
+              {screen === 'notifications' && <NotificationsScreen />}
+              {screen === 'language' && <LanguageScreen />}
+              {screen === 'help' && <HelpScreen />}
+              {screen === 'terms' && <LegalScreen doc="terms" />}
+              {screen === 'privacy' && <LegalScreen doc="privacy" />}
+              {screen === 'offer' && <LegalScreen doc="offer" />}
+              {!LEGAL_SCREENS.has(screen) && <LegalFooter />}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

@@ -5,11 +5,15 @@ export function BottomSheet({
   onClose,
   children,
   labelledBy,
+  backdropClassName,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   labelledBy?: string;
+  /** Доп. класс подложки — шиту, которому надо лечь поверх кабинета
+   *  (у оверлея кабинета z-index 1000, у обычной подложки 30). */
+  backdropClassName?: string;
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -28,7 +32,10 @@ export function BottomSheet({
   if (!open) return null;
 
   return (
-    <div className="hud-sheet-backdrop" onPointerDown={onClose}>
+    <div
+      className={`hud-sheet-backdrop${backdropClassName ? ` ${backdropClassName}` : ''}`}
+      onPointerDown={onClose}
+    >
       <div
         className="hud-sheet"
         role="dialog"

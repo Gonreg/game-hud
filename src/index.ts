@@ -26,6 +26,14 @@ export {
   type BetLimits,
 } from './bet/useBetAmount';
 
+// Бонусы (1.5.0): кнопка с объёмным подарком, шит «Бонусы» и промо-карусель
+// кабинета. Шит и карусель уже смонтированы в ProfileShell/ProfileHub; игра
+// ставит только кнопку. Всё молчит у бэка без getBonuses.
+export { BonusButton } from './bonus/BonusButton';
+export { BonusSheet } from './bonus/BonusSheet';
+export { PromoCarousel } from './bonus/PromoCarousel';
+export { GiftIcon3D } from './bonus/GiftIcon3D';
+
 export { BottomSheet } from './primitives/BottomSheet';
 export { InfoPopover } from './primitives/InfoPopover';
 export { Skeleton } from './primitives/Skeleton';

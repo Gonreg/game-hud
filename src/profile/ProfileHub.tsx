@@ -5,6 +5,7 @@ import { useHudStore, type HudScreen } from '../store/hudStore';
 import { useHudResource } from '../context/useHudResource';
 import { useHudWallet } from '../wallet/useHudWallet';
 import { fmtAmount } from '../format/money';
+import { PromoCarousel } from '../bonus/PromoCarousel';
 import {
   IconBell,
   IconChart,
@@ -93,6 +94,9 @@ export function ProfileHub() {
           </div>
         </div>
       </div>
+      {/* Все активные акции игрока каруселью — над балансами, чтобы их было
+          видно сразу при открытии кабинета. Бэк без getBonuses — карусели нет. */}
+      <PromoCarousel />
       <div className="hud-profile-hub__balances">
         <div
           className="hud-profile-hub__bal-clickable"

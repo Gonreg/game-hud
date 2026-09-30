@@ -20,6 +20,13 @@ interface HudState {
   screen: HudScreen;
   walletFocus: 'deposit' | 'withdraw' | null;
   helpTheme: SupportTheme | null;
+  /** Открыт ли боттом-шит «Бонусы» (BonusSheet). Отдельно от `open`: шит
+   *  открывается и поверх игры, и поверх кабинета. */
+  bonusOpen: boolean;
+  /** Счётчик свежести бонусов: игра поднимает его (bumpBonuses), когда
+   *  фриспины или отыгрыш изменились — после ставки, расчёта раунда,
+   *  депозита. Кнопка и карусель перезапрашивают getBonuses по его смене. */
+  bonusTick: number;
   openProfile: () => void;
   openHistory: () => void;
   close: () => void;
@@ -28,6 +35,9 @@ interface HudState {
   clearWalletFocus: () => void;
   openHelpWithTheme: (theme: SupportTheme) => void;
   clearHelpTheme: () => void;
+  openBonuses: () => void;
+  closeBonuses: () => void;
+  bumpBonuses: () => void;
 }
 
 /**
@@ -43,6 +53,8 @@ export const useHudStore = create<HudState>((set) => ({
   screen: 'hub',
   walletFocus: null,
   helpTheme: null,
+  bonusOpen: false,
+  bonusTick: 0,
   openProfile: () => set({ open: true, screen: 'hub' }),
   openHistory: () => set({ open: true, screen: 'history' }),
   close: () => set({ open: false }),
@@ -55,4 +67,7 @@ export const useHudStore = create<HudState>((set) => ({
   clearWalletFocus: () => set({ walletFocus: null }),
   openHelpWithTheme: (theme) => set({ open: true, screen: 'help', helpTheme: theme }),
   clearHelpTheme: () => set({ helpTheme: null }),
+  openBonuses: () => set({ bonusOpen: true }),
+  closeBonuses: () => set({ bonusOpen: false }),
+  bumpBonuses: () => set((s) => ({ bonusTick: s.bonusTick + 1 })),
 }));
